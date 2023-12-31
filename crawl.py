@@ -14,9 +14,9 @@ def get_phil_sd_hs_links():
         for school in schools_html:
             school_str = str(school)
             if 'href' in school_str:
-                wiki_str_ind = school_str.find('wiki/')+6
+                wiki_str_ind = school_str.find('wiki/')+5
                 wiki_domain_suff = school_str[wiki_str_ind:school_str.find('\"',wiki_str_ind)]
-                print(wiki_domain_suff)
+                #school_wiki_req = requests.get("https://en.wikipedia.org/wiki/")
             else:
                 #google search
                 pass

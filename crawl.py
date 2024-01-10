@@ -53,6 +53,8 @@ def get_phil_sd_hs_links():
                 goog_srch_res = google_search_school(school.text)
                 if goog_srch_res:
                     school_to_link[school.text]=goog_srch_res
+    #End up missing 10 of the high schools in the district
+    #print(len(school_to_link))
     for link in school_to_link:
         couns_req = requests.get(school_to_link[link]+'counselors-corner')
         if couns_req.status_code==200:
@@ -60,6 +62,5 @@ def get_phil_sd_hs_links():
             pass
         else:
             couns_req=requests.get('https://www.google.com/search?q=counselors&as_sitesearch='+school_to_link[link])
-            print(couns_req.status_code)
 
 get_phil_sd_hs_links()

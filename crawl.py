@@ -41,6 +41,8 @@ def get_phil_sd_hs_links():
                     potential_link = link.get('href')
                     if potential_link and 'philasd.org' in potential_link and 'www.philasd.org' not in potential_link and any(item.lower() in potential_link for item in school_str[:up_to_ind].split()):
                         hs_link=potential_link
+                        if hs_link[-1]!='/':
+                            hs_link+='/'
                         school_to_link[school.text]=hs_link
                         break
                 if not hs_link:
@@ -51,6 +53,13 @@ def get_phil_sd_hs_links():
                 goog_srch_res = google_search_school(school.text)
                 if goog_srch_res:
                     school_to_link[school.text]=goog_srch_res
-    print(school_to_link)
+    for link in school_to_link:
+        couns_req = requests.get(school_to_link[link]+'counselors-corner')
+        if couns_req.status_code==200:
+            #format for each page is not consistent
+            pass
+        else:
+            couns_req=requests.get('https://www.google.com/search?q=counselors&as_sitesearch='+school_to_link[link])
+            print(couns_req.status_code)
 
 get_phil_sd_hs_links()

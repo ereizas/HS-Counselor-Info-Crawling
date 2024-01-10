@@ -1,6 +1,19 @@
 import requests
 from bs4 import BeautifulSoup
 
+def google_search_school(query):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
+    s=requests.Session()
+    req = s.get('https://www.google.com/search?q='+'+'.join(query.split())+'&num=5&ie=utf-8&oe=utf-8',headers=headers)
+    soup=BeautifulSoup(req.text,'html.parser')
+    for search_wrapper in soup.find_all('a'):
+        link = search_wrapper.get('href')
+        if search_wrapper and link and 'philasd' in link:
+            return link[:link.find('.org/')+6]
+    return None
+
 def get_phil_sd_hs_links():
     """
     Creates list of Philadelphia school district high school links
@@ -26,18 +39,18 @@ def get_phil_sd_hs_links():
                     if up_to_ind+5!=school_str_len-1:
                         up_to_ind=school_str_len
                     potential_link = link.get('href')
-                    if potential_link and 'philasd.org' in potential_link and any(item.lower() in potential_link for item in school_str[:up_to_ind].split()):
+                    if potential_link and 'philasd.org' in potential_link and 'www.philasd.org' not in potential_link and any(item.lower() in potential_link for item in school_str[:up_to_ind].split()):
                         hs_link=potential_link
                         school_to_link[school.text]=hs_link
                         break
                 if not hs_link:
-                    #google search
-                    pass
+                    goog_srch_res = google_search_school(school.text)
+                    if goog_srch_res:
+                        school_to_link[school.text]=goog_srch_res
             else:
-                #google search
-                pass
+                goog_srch_res = google_search_school(school.text)
+                if goog_srch_res:
+                    school_to_link[school.text]=goog_srch_res
     print(school_to_link)
-
-            
 
 get_phil_sd_hs_links()

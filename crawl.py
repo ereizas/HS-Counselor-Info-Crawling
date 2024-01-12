@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from googlesearch import search
+import re
 
 def google_search_school(query,qualifying_str):
     headers = {
@@ -93,10 +94,9 @@ def get_phil_sd_hs_links():
                         tag_txt = p_tags[i].text
                         if 'Counselor' in tag_txt:
                             name = tag_txt[:tag_txt.find('(')-1]
-                            contact_info[school][name]=[None,None]
                             i+=2
                             tag_txt=p_tags[i].text
-                            contact_info[school][name][0]=tag_txt[tag_txt.find(':')+2:]
+                            contact_info[school][name]=[tag_txt[tag_txt.find(':')+2:],None]
                         i+=1   
                 elif school == 'GAMP':
                     p_tags=soup.find_all('p')
@@ -104,9 +104,10 @@ def get_phil_sd_hs_links():
                         tag_txt = tag.text
                         if '@' in tag_txt:
                             #long dash is used not short dash
-                            name=tag_txt[4:tag_txt.find('–')-1]
-                            contact_info[school][name]=[None,None]
-                            contact_info[school][name][0]=tag_txt[tag_txt.find('–')+2:]
-                    print(contact_info)
+                            contact_info[school][tag_txt[4:tag_txt.find('–')-1]]=[tag_txt[tag_txt.find('–')+2:],None]
+                elif school == 'Thomas A. Edison High School':
+                    rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9]+\d* (even|odd)")})
+                    for row in rows:
+                        contact_info[school][row.find('td',attrs={'class':'column-1'}).text]=[row.find('td',attrs={'class':'column-4'}).text]
             
 get_phil_sd_hs_links()

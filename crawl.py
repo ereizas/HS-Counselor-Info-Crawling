@@ -87,5 +87,16 @@ def get_phil_sd_hs_links():
                 soup=BeautifulSoup(couns_req.text,'html.parser')
                 if school == 'South Philadelphia High School':
                     p_tags=soup.find_all('p')
-                    
+                    i = 0
+                    num_p_tags=len(p_tags)
+                    while i<num_p_tags:
+                        tag_txt = p_tags[i].text
+                        if 'Counselor' in tag_txt:
+                            name = tag_txt[:tag_txt.find('(')-1]
+                            contact_info[school][name]=[None,None]
+                            i+=2
+                            tag_txt=p_tags[i].text
+                            contact_info[school][name][0]=tag_txt[tag_txt.find(':')+2:]
+                        i+=1   
+                    print(contact_info) 
 get_phil_sd_hs_links()

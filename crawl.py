@@ -98,5 +98,15 @@ def get_phil_sd_hs_links():
                             tag_txt=p_tags[i].text
                             contact_info[school][name][0]=tag_txt[tag_txt.find(':')+2:]
                         i+=1   
-                    print(contact_info) 
+                elif school == 'GAMP':
+                    p_tags=soup.find_all('p')
+                    for tag in p_tags:
+                        tag_txt = tag.text
+                        if '@' in tag_txt:
+                            #long dash is used not short dash
+                            name=tag_txt[4:tag_txt.find('–')-1]
+                            contact_info[school][name]=[None,None]
+                            contact_info[school][name][0]=tag_txt[tag_txt.find('–')+2:]
+                    print(contact_info)
+            
 get_phil_sd_hs_links()

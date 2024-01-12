@@ -42,7 +42,7 @@ def get_phil_sd_hs_links():
                         if up_to_ind+5!=school_str_len-1:
                             up_to_ind=school_str_len
                         potential_link = link.get('href')
-                        if potential_link and 'philasd.org' in potential_link and 'www.philasd.org' not in potential_link and any(item.lower() in potential_link for item in school_str[:up_to_ind].split()):
+                        if potential_link and 'philasd.org' in potential_link and 'www.philasd.org' not in potential_link and 'https://philasd.org/' not in potential_link and any(item.lower() in potential_link for item in school_str[:up_to_ind].split()):
                             hs_link=potential_link
                             if hs_link[-1]!='/':
                                 hs_link+='/'
@@ -57,12 +57,17 @@ def get_phil_sd_hs_links():
                 if goog_srch_res:
                     school_to_link[school.text]=goog_srch_res
     #print(len(school_to_link))
-    for link in school_to_link:
-        couns_req = requests.get(school_to_link[link]+'counselors-corner')
+    print(school_to_link)
+    for school in school_to_link:
+        couns_req = None
+        suffs = ['counselors-corner','faculty-staff','counselor','counselors','staff']
+        for suff in suffs:
+            test_req=requests.get(school_to_link[school]+suff)
+            if test_req.status_code==200:
+                couns_req=test_req
+                break
+        if not couns_req:
+            couns_req=requests.get('https://www.google.com/search?q=counselors&as_sitesearch='+school_to_link[school])
         if couns_req.status_code==200:
-            #format for each page is not consistent
-            pass
-        else:
-            couns_req=requests.get('https://www.google.com/search?q=counselors&as_sitesearch='+school_to_link[link])
-
+            soup=BeautifulSoup(couns_req.text,'html.parser')
 get_phil_sd_hs_links()

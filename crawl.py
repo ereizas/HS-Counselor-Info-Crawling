@@ -29,7 +29,7 @@ def get_phil_sd_hs_links():
     """
     Creates list of Philadelphia school district high school links
     """
-    '''school_to_link = dict()
+    school_to_link = dict()
     req = requests.get("https://en.wikipedia.org/wiki/List_of_schools_of_the_School_District_of_Philadelphia")
     soup = BeautifulSoup(req.text,'html.parser')
     link_sections = soup.find_all('div',attrs={'class':"div-col"})[3:6]
@@ -68,7 +68,9 @@ def get_phil_sd_hs_links():
                 if goog_srch_res:
                     school_to_link[school.text]=goog_srch_res
     #print(len(school_to_link))
-    print(school_to_link)'''
+    return school_to_link
+
+def get_contact_info():
     school_to_link={'John Bartram High School': 'https://bartram.philasd.org/', 'Thomas A. Edison High School': 'https://edison.philasd.org/', 'Samuel Fels High School': 'https://fels.philasd.org/', 'Frankford High School': 'https://frankfordhs.philasd.org/', 'Benjamin Franklin High School': 'https://bfhs.philasd.org/', 'Horace Furness High School': 'https://furness.philasd.org/', 'Kensington High School': 'https://kensingtonhs.philasd.org/', 'Martin Luther King High School': 'https://mlkhs.philasd.org/', 'Abraham Lincoln High School': 'https://lincoln.philasd.org/', 'Northeast High School': 'https://nehs.philasd.org/', 'Overbrook High School': 'https://overbrookhs.philasd.org/', 'Penn Treaty School (6-12)': 'https://penntreaty.philasd.org/', 'Roxborough High School': 'https://roxboroughhs.philasd.org/', 'William L. Sayre High School': 'https://sayre.philasd.org/', 'South Philadelphia High School': 'https://sphs.philasd.org/', 'Strawberry Mansion High School': 'https://smhs.philasd.org/', 'George Washington High School': 'https://gwhs.philasd.org/', 'West Philadelphia High School': 'https://wphs.philasd.org/', 'Academy at Palumbo': 'https://palumbo.philasd.org/', 'The Arts Academy at Benjamin Rush': 'https://rush.philasd.org/', 'Bodine International Affairs': 'https://bodine.philasd.org/', 'CAPA': 'https://capa.philasd.org/', 'Carver High School for Engineering and Science': 'https://hses.philasd.org/', 'Central High School': 'https://centralhs.philasd.org/', 'GAMP': 'https://gamp.philasd.org/', 'Franklin Learning Center': 'https://flc.philasd.org/', 'Hill-Freedman World Academy High School': 'https://hfwa.philasd.org/', 'Julia R. Masterman School': 'https://masterman.philasd.org/', 'Kensington Creative & Performing Arts High School': 'https://kcapa.philasd.org/', 'Kensington Health Sciences Academy High School': 'https://khsa.philasd.org/', 'Parkway Center City High School': 'https://parkwaycc.philasd.org/', 'Parkway Northwest High School': 'https://parkwaynw.philasd.org/', 'Parkway West High School': 'https://parkwaywest.philasd.org/', 'Philadelphia High School for Girls': 'https://girlshs.philasd.org/', 'Philadelphia Learning Academy': 'https://planorth.philasd.org/', 'Philadelphia Military Academy': 'https://pma.philasd.org/', 'Philadelphia Virtual Academy': 'https://pva.philasd.org/', 'Science Leadership Academy': 'https://sla.philasd.org/', 'Science Leadership Academy at Beeber (6-12)': 'https://slabeeber.philasd.org/', 'The LINC': 'https://thelinc.philasd.org/', 'Walter Biddle Saul High School for Agricultural Sciences': 'https://saul.philasd.org/', 'Building 21': 'https://building21.philasd.org/', 'Constitution High School': 'https://constitutionhs.philasd.org/', 'Murrell Dobbins Vocational School': 'https://dobbins.philasd.org/', 'High School of the Future': 'https://sof.philasd.org/', 'Lankenau High School': 'https://lankenau.philasd.org/', 'Jules E. Mastbaum Technical High School': 'https://mastbaum.philasd.org/', 'Motivation High School': 'https://motivationhs.philasd.org/', 'Paul Robeson High School for Human Services': 'https://robeson.philasd.org/', 'Randolph Technical High School': 'https://randolph.philasd.org/', 'The U School': 'https://uschool.philasd.org/', 'The Workshop School': 'https://workshopschool.philasd.org/', 'Swenson Arts and Technology High School': 'https://swenson.philasd.org/', 'Vaux Big Picture High School': 'https://vaux.philasd.org/'}
     #school mapped to dict of names mapped to email and phone #
     contact_info = dict()
@@ -131,7 +133,7 @@ def get_phil_sd_hs_links():
                     for tag in strong_tags:
                         tag_txt=tag.text
                         contact_info[school][tag_txt[:tag_txt.find('–')-1]]=[tag_txt[tag_txt.find('–')+2:],None]
-                    print(contact_info)
+    return contact_info
                     
             
-get_phil_sd_hs_links()
+get_contact_info()

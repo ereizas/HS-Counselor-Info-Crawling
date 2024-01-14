@@ -158,12 +158,11 @@ def get_psd_contact_info():
                     for i in range(11,len(td_tags),5):
                         contact_info[school][td_tags[i].text.strip('\xa0')]=[td_tags[i+3].text.strip('\xa0'),None]
                 elif school=='Roxborough High School':
-                    #redo (look at h3 tags)
-                    '''tr_tags = soup.find_all('tr',attrs={'class':re.compile("row-([9][3-9]|[1-9]\d{2,}) (even|odd)")})
-                    for tag in tr_tags:
-                        name = tag.find('td',attrs={'class':'column-1'}).text
-                        paren_ind = name.find('(')
-                        contact_info[school][name[:paren_ind].strip(' ')]=[tag.find('td',attrs={'class':'column-2'}).text,None]'''
+                    h3_tags = soup.find_all('h3')
+                    num_tags=len(h3_tags)
+                    for i in range(0,num_tags,2):
+                        if i+1<num_tags:
+                            contact_info[school][h3_tags[i].text]=[h3_tags[i+1].text,None]
                 elif school=='Bodine International Affairs':
                     li_tags=soup.find_all('li',attrs={'class':None,'id':None})
                     for tag in li_tags:

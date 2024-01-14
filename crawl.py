@@ -166,7 +166,6 @@ def get_psd_contact_info():
                         tag_txt=tag.text
                         if 'Counselor' in tag_txt:
                             contact_info[school][tag_txt[:tag_txt.find(',')]]=[tag_txt[tag_txt.rfind(',')+2:],None]
-                    print(contact_info)
                 elif school=='Randolph Technical High School':
                     li_tags=soup.find_all('li',attrs={'class':None,'id':None})
                     for i in range(len(li_tags)):
@@ -181,9 +180,16 @@ def get_psd_contact_info():
                                 j+=1
                                 strong_tag = li_tags[j].find('strong')
                             break
+                elif school=='CAPA':
+                    a_tags = soup.find_all('a',attrs={'href':re.compile('([A-Za-z])@philasd.org')})
+                    for tag in a_tags:
+                        tag_txt=tag.text
+                        name = tag_txt[6:]
+                        dot_ind = name.find('.')
+                        name = name[0]+name[1:dot_ind+2].lower()+name[dot_ind+2]+name[dot_ind+3:].lower()
+                        contact_info[school][name]=[tag.get('href'),None]
                     print(contact_info)
 
-                
     return contact_info
                     
             

@@ -17,9 +17,10 @@ def google_search_school(query,qualifying_str):
     return None
 
 def get_contacts_from_sprdsheet(soup,job_col,name_col,email_col,contact_info,school,rvrs_order):
-    rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9]+\d* ?(even|odd)?")})
+    rows = soup.find_all('tr',attrs={'class':re.compile("row-([2-9]|[1-9]\d{1,}) ?(even|odd)?")})
     for row in rows:
-        if 'Counselor' in row.find('td',attrs={'class':'column-'+job_col}).text:
+        row_text = row.find('td',attrs={'class':'column-'+job_col}).text
+        if 'Counsel' in row_text and 'MS' not in row_text:
             names = row.find('td',attrs={'class':'column-'+name_col}).text.split('\n')
             emails = row.find('td',attrs={'class':'column-'+email_col}).text.split('\n')
             i = 0
@@ -194,6 +195,8 @@ def get_psd_contact_info():
                         tag_txt=td_tags[i].text
                         #' x' should be a valid cutoff for the name assuming names start with a capital letter (i.e. Xavier)
                         contact_info[school][tag_txt[:tag_txt.find(' x')]]=[tag_txt[tag_txt.find('/')+2:],None]
+                elif school=='Hill-Freedman World Academy High School':
+                    get_contacts_from_sprdsheet(soup,'2','1','3',contact_info,school,False)
                     print(contact_info)
 
     return contact_info

@@ -188,6 +188,12 @@ def get_psd_contact_info():
                         dot_ind = name.find('.')
                         name = name[0]+name[1:dot_ind+2].lower()+name[dot_ind+2]+name[dot_ind+3:].lower()
                         contact_info[school][name]=[tag.get('href'),None]
+                elif school=='Central High School':
+                    td_tags=soup.find_all('td',attrs={'style':'text-align: center'})
+                    for i in range(3,len(td_tags),2):
+                        tag_txt=td_tags[i].text
+                        #' x' should be a valid cutoff for the name assuming names start with a capital letter (i.e. Xavier)
+                        contact_info[school][tag_txt[:tag_txt.find(' x')]]=[tag_txt[tag_txt.find('/')+2:],None]
                     print(contact_info)
 
     return contact_info

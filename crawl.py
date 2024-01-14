@@ -64,11 +64,10 @@ def get_phil_sd_hs_links():
     #school mapped to dict of names mapped to email and phone #
     contact_info = dict()
     for school in school_to_link:
-        if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Frankford High School','Kensington High School',
-                      'Penn Treaty School (6-12)','Constitution High School','Jules E. Mastbaum Technical High School',
-                      'Benjamin Franklin High School','Northeast High School','Roxborough High School','The Arts Academy at Benjamin Rush',
-                      'Bodine International Affairs','Randolph Technical High School','CAPA','Central High School',
-                      'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
+        if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School',
+                      'Penn Treaty School (6-12)','Constitution High School','Benjamin Franklin High School','Northeast High School',
+                      'Roxborough High School','The Arts Academy at Benjamin Rush','Bodine International Affairs','Randolph Technical High School','CAPA',
+                      'Central High School','Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
                       'Samuel Fels High School','William L. Sayre High School']:
             contact_info[school]=dict()
             couns_req = None
@@ -83,7 +82,6 @@ def get_phil_sd_hs_links():
                 for link in links:
                     couns_req=requests.get(str(link))
                     break
-                soup = BeautifulSoup(couns_req.text,'html.parser')
             if couns_req.status_code==200:
                 soup=BeautifulSoup(couns_req.text,'html.parser')
                 if school == 'South Philadelphia High School':
@@ -109,5 +107,18 @@ def get_phil_sd_hs_links():
                     rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9]+\d* (even|odd)")})
                     for row in rows:
                         contact_info[school][row.find('td',attrs={'class':'column-1'}).text]=[row.find('td',attrs={'class':'column-4'}).text]
+                elif school in ['Kensington High School','Penn Treaty School (6-12)','Constitution High School']:
+                    rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9]+\d* ?(even|odd)?")})
+                    if school=='Kensington High School':
+                        for row in rows:
+                            if 'Counselor' in row.find('td',attrs={'class':'column-4'}).text:
+                                name = row.find('td',attrs={'class':'column-1'}).text
+                                contact_info[school][name[name.find(',')+2:]+' '+name[:name.find(',')]]=[row.find('td',attrs={'class':'column-5'}).text,None]
+                    else:
+                        for row in rows:
+                            if 'Counselor' in row.find('td',attrs={'class':'column-1'}).text:
+                                contact_info[school][row.find('td',attrs={'class':'column-2'}).text]=[row.find('td',attrs={'class':'column-3'}).text,None]
+                    print(contact_info)
+                    
             
 get_phil_sd_hs_links()

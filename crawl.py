@@ -126,6 +126,11 @@ def get_phil_sd_hs_links():
                         for row in rows:
                             if 'Counselor' in row.find('td',attrs={'class':'column-1'}).text:
                                 get_names_and_emails_from_sprdsheet(row,'2','3',contact_info,school,False)
+                elif school=='Benjamin Franklin High School':
+                    strong_tags=soup.find_all('strong')
+                    for tag in strong_tags:
+                        tag_txt=tag.text
+                        contact_info[school][tag_txt[:tag_txt.find('–')-1]]=[tag_txt[tag_txt.find('–')+2:],None]
                     print(contact_info)
                     
             

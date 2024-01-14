@@ -99,13 +99,13 @@ def get_psd_contact_info():
                       'Penn Treaty School (6-12)','Constitution High School','Benjamin Franklin High School','Northeast High School',
                       'Roxborough High School','Bodine International Affairs','Randolph Technical High School','CAPA','Central High School',
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
-                      'Samuel Fels High School','William L. Sayre High School']:
+                      'Samuel Fels High School','William L. Sayre High School','George Washington High School']:
             contact_info[school]=dict()
             couns_req = None
-            suffs = ['counselors-corner','faculty-staff','counselor','counselors','staff']
+            suffs = ['counselors-corner','faculty-staff','counselor','counselors','support-team','staff']
             for suff in suffs:
                 test_req=requests.get(school_to_link[school]+suff)
-                if test_req.status_code==200:
+                if test_req.status_code>=200 and test_req.status_code<300:
                     print(school_to_link[school]+suff)
                     couns_req=test_req
                     break
@@ -158,9 +158,12 @@ def get_psd_contact_info():
                     for i in range(11,len(td_tags),5):
                         contact_info[school][td_tags[i].text.strip('\xa0')]=[td_tags[i+3].text.strip('\xa0'),None]
                 elif school=='Roxborough High School':
-                    tr_tags = soup.find_all('tr',attrs={'class':re.compile("row-([9][3-9]|[1-9]\d{2,}) (even|odd)")})
+                    #redo (look at h3 tags)
+                    '''tr_tags = soup.find_all('tr',attrs={'class':re.compile("row-([9][3-9]|[1-9]\d{2,}) (even|odd)")})
                     for tag in tr_tags:
-                        contact_info[school][tag.find('td',attrs={'class':'column-1'}).text.strip(' (STEP)')]=[tag.find('td',attrs={'class':'column-2'}).text,None]
+                        name = tag.find('td',attrs={'class':'column-1'}).text
+                        paren_ind = name.find('(')
+                        contact_info[school][name[:paren_ind].strip(' ')]=[tag.find('td',attrs={'class':'column-2'}).text,None]'''
                 elif school=='Bodine International Affairs':
                     li_tags=soup.find_all('li',attrs={'class':None,'id':None})
                     for tag in li_tags:
@@ -197,6 +200,14 @@ def get_psd_contact_info():
                         contact_info[school][tag_txt[:tag_txt.find(' x')]]=[tag_txt[tag_txt.find('/')+2:],None]
                 elif school=='Hill-Freedman World Academy High School':
                     get_contacts_from_sprdsheet(soup,'2','1','3',contact_info,school,False)
+                elif school=='George Washington High School':
+                    p_tags=soup.find_all('p',attrs={'style':'text-align: center'})
+                    for i in range(1,len(p_tags)):
+                        tag_txt=p_tags[i].text
+                        if 'Counsel' in tag_txt:
+                            a_tag = p_tags[i].find('a')
+                            if  a_tag:
+                                contact_info[school][tag_txt[:tag_txt.find('\n')]]=[a_tag.text.strip('\xa0'),None]
                     print(contact_info)
 
     return contact_info

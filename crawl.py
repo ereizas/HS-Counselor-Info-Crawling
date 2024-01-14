@@ -135,7 +135,6 @@ def get_contact_info():
                     for tag in strong_tags:
                         tag_txt=tag.text
                         contact_info[school][tag_txt[:tag_txt.find('–')-1]]=[tag_txt[tag_txt.find('–')+2:],None]
-                    print(contact_info)
                 elif school=='Northeast High School':
                     #first two rows initialize the style
                     span_tags = soup.find_all('span',attrs={'style':re.compile('font-weight: (\d)*')})
@@ -144,6 +143,12 @@ def get_contact_info():
                     td_tags = soup.find_all('td',attrs={'style':re.compile('height: (\d)*px;width: (\d)*px')})
                     for i in range(11,len(td_tags),5):
                         contact_info[school][td_tags[i].text.strip('\xa0')]=[td_tags[i+3].text.strip('\xa0'),None]
+                elif school=='Roxborough High School':
+                    tr_tags = soup.find_all('tr',attrs={'class':re.compile("row-([9][3-9]|[1-9]\d{2,}) (even|odd)")})
+                    for tag in tr_tags:
+                        contact_info[school][tag.find('td',attrs={'class':'column-1'}).text.strip(' (STEP)')]=[tag.find('td',attrs={'class':'column-2'}).text,None]
+                    print(contact_info)
+                    
                 
     return contact_info
                     

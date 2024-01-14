@@ -16,14 +16,17 @@ def google_search_school(query,qualifying_str):
             return link[:link.find('.org/')+6]
     return None
 
-def get_contacts_from_sprdsheet(row,name_col,email_col,contact_info,school,rvrs_order):
-    names = row.find('td',attrs={'class':'column-'+name_col}).text.split('\n')
-    emails = row.find('td',attrs={'class':'column-'+email_col}).text.split('\n')
-    i = 0
-    for i in range(len(names)):
-        if rvrs_order:
-            names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
-        contact_info[school][names[i]]=[emails[i],None]
+def get_contacts_from_sprdsheet(soup,job_col,name_col,email_col,contact_info,school,rvrs_order):
+    rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9]+\d* ?(even|odd)?")})
+    for row in rows:
+        if 'Counselor' in row.find('td',attrs={'class':'column-'+job_col}).text:
+            names = row.find('td',attrs={'class':'column-'+name_col}).text.split('\n')
+            emails = row.find('td',attrs={'class':'column-'+email_col}).text.split('\n')
+            i = 0
+            for i in range(len(names)):
+                if rvrs_order:
+                    names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
+                contact_info[school][names[i]]=[emails[i],None]
 
 def get_phil_sd_hs_links():
     """
@@ -120,16 +123,10 @@ def get_psd_contact_info():
                     rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9]+\d* (even|odd)")})
                     for row in rows:
                         contact_info[school][row.find('td',attrs={'class':'column-1'}).text]=[row.find('td',attrs={'class':'column-4'}).text]
-                elif school in ['Kensington High School','Penn Treaty School (6-12)','Constitution High School']:
-                    rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9]+\d* ?(even|odd)?")})
-                    if school=='Kensington High School':
-                        for row in rows:
-                            if 'Counselor' in row.find('td',attrs={'class':'column-4'}).text:
-                                get_contacts_from_sprdsheet(row,'1','5',contact_info,school,True)
-                    else:
-                        for row in rows:
-                            if 'Counselor' in row.find('td',attrs={'class':'column-1'}).text:
-                                get_contacts_from_sprdsheet(row,'2','3',contact_info,school,False)
+                elif school=='Kensington High School':
+                    get_contacts_from_sprdsheet(soup,'4','1','5',contact_info,school,True)
+                elif school in ['Penn Treaty School (6-12)','Constitution High School']:
+                    get_contacts_from_sprdsheet(soup,'1','2','3',contact_info,school,False)
                 elif school=='Benjamin Franklin High School':
                     strong_tags=soup.find_all('strong')[2:]
                     for tag in strong_tags:
@@ -148,13 +145,7 @@ def get_psd_contact_info():
                     for tag in tr_tags:
                         contact_info[school][tag.find('td',attrs={'class':'column-1'}).text.strip(' (STEP)')]=[tag.find('td',attrs={'class':'column-2'}).text,None]
                 elif school in ['Bodine International Affairs','Randolph Technical High School']:
-                    li_tags=soup.find_all('li',attrs={'class':None,'id':None})
-                    for i in range(len(li_tags)):
-                        strong_tag = li_tags[i].find('strong')
-                        if strong_tag and strong_tag.text=='Counselor':
-                            tag_txt=li_tags[i+1].text
-                            contact_info[school][tag_txt[:tag_txt.find('(')-1]]=[tag_txt[tag_txt.find('(')+1:-1],None]
-                            break
+                    #get_contacts_from_li_tags(soup,contact_info,school,)
 
                 
     return contact_info

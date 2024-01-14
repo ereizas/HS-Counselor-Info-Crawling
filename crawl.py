@@ -16,6 +16,15 @@ def google_search_school(query,qualifying_str):
             return link[:link.find('.org/')+6]
     return None
 
+def get_names_and_emails_from_sprdsheet(row,name_col,email_col,contact_info,school,rvrs_order):
+    names = row.find('td',attrs={'class':'column-'+name_col}).text.split('\n')
+    emails = row.find('td',attrs={'class':'column-'+email_col}).text.split('\n')
+    i = 0
+    for i in range(len(names)):
+        if rvrs_order:
+            names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
+        contact_info[school][names[i]]=[emails[i],None]
+
 def get_phil_sd_hs_links():
     """
     Creates list of Philadelphia school district high school links
@@ -112,12 +121,11 @@ def get_phil_sd_hs_links():
                     if school=='Kensington High School':
                         for row in rows:
                             if 'Counselor' in row.find('td',attrs={'class':'column-4'}).text:
-                                name = row.find('td',attrs={'class':'column-1'}).text
-                                contact_info[school][name[name.find(',')+2:]+' '+name[:name.find(',')]]=[row.find('td',attrs={'class':'column-5'}).text,None]
+                                get_names_and_emails_from_sprdsheet(row,'1','5',contact_info,school,True)
                     else:
                         for row in rows:
                             if 'Counselor' in row.find('td',attrs={'class':'column-1'}).text:
-                                contact_info[school][row.find('td',attrs={'class':'column-2'}).text]=[row.find('td',attrs={'class':'column-3'}).text,None]
+                                get_names_and_emails_from_sprdsheet(row,'2','3',contact_info,school,False)
                     print(contact_info)
                     
             

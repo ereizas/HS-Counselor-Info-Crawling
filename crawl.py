@@ -28,6 +28,22 @@ def get_contacts_from_sprdsheet(soup,job_col,name_col,email_col,contact_info,sch
                     names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
                 contact_info[school][names[i]]=[emails[i],None]
 
+def get_contacts_from_li_tags(soup,contact_info,school,separator):
+    li_tags=soup.find_all('li',attrs={'class':None,'id':None})
+    for i in range(len(li_tags)):
+        strong_tag = li_tags[i].find('strong')
+        if strong_tag and 'Counselor' in strong_tag.text:
+            j=i+1
+            strong_tag = li_tags[j].find('strong')
+            while not strong_tag:
+                tag_txt=li_tags[j].text
+                separator_ind = tag_txt.find(separator)
+                name = tag_txt[:separator_ind-1]
+                contact_info[school][name]=[tag_txt[separator_ind+1:-1],None]
+                j+=1
+                strong_tag = li_tags[j].find('strong')
+            break
+
 def get_phil_sd_hs_links():
     """
     Creates list of Philadelphia school district high school links
@@ -144,8 +160,28 @@ def get_psd_contact_info():
                     tr_tags = soup.find_all('tr',attrs={'class':re.compile("row-([9][3-9]|[1-9]\d{2,}) (even|odd)")})
                     for tag in tr_tags:
                         contact_info[school][tag.find('td',attrs={'class':'column-1'}).text.strip(' (STEP)')]=[tag.find('td',attrs={'class':'column-2'}).text,None]
-                elif school in ['Bodine International Affairs','Randolph Technical High School']:
-                    #get_contacts_from_li_tags(soup,contact_info,school,)
+                elif school=='Bodine International Affairs':
+                    li_tags=soup.find_all('li',attrs={'class':None,'id':None})
+                    for tag in li_tags:
+                        tag_txt=tag.text
+                        if 'Counselor' in tag_txt:
+                            contact_info[school][tag_txt[:tag_txt.find(',')]]=[tag_txt[tag_txt.rfind(',')+2:],None]
+                    print(contact_info)
+                elif school=='Randolph Technical High School':
+                    li_tags=soup.find_all('li',attrs={'class':None,'id':None})
+                    for i in range(len(li_tags)):
+                        strong_tag = li_tags[i].find('strong')
+                        if strong_tag and 'Counselor' in strong_tag.text:
+                            j=i+1
+                            strong_tag = li_tags[j].find('strong')
+                            while not strong_tag:
+                                tag_txt=li_tags[j].text
+                                separator_ind = tag_txt.find('(')
+                                contact_info[school][tag_txt[:separator_ind-1]]=[tag_txt[separator_ind+1:-1],None]
+                                j+=1
+                                strong_tag = li_tags[j].find('strong')
+                            break
+                    print(contact_info)
 
                 
     return contact_info

@@ -86,11 +86,13 @@ def get_contact_info():
             for suff in suffs:
                 test_req=requests.get(school_to_link[school]+suff)
                 if test_req.status_code==200:
+                    print(school_to_link[school]+suff)
                     couns_req=test_req
                     break
             if not couns_req:
                 links=search(query='counselor site:'+school_to_link[school],stop=1)
                 for link in links:
+                    print(link)
                     couns_req=requests.get(str(link))
                     break
             if couns_req.status_code==200:
@@ -133,6 +135,16 @@ def get_contact_info():
                     for tag in strong_tags:
                         tag_txt=tag.text
                         contact_info[school][tag_txt[:tag_txt.find('–')-1]]=[tag_txt[tag_txt.find('–')+2:],None]
+                elif school=='Northeast High School':
+                    #first two rows initialize the style
+                    span_tags = soup.find_all('span',attrs={'style':re.compile('font-weight: (\d)*')})
+                    contact_info[school][span_tags[8].text]=[span_tags[11].text,None]
+                    #next rows have a different tag
+                    td_tags = soup.find_all('td',attrs={'style':re.compile('height: (\d)*px;width: (\d)*px')})
+                    for i in range(11,len(td_tags),5):
+                        contact_info[school][td_tags[i].text.strip('\xa0')]=[td_tags[i+3].text.strip('\xa0'),None]
+                    print(contact_info)
+                
     return contact_info
                     
             

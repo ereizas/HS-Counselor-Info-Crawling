@@ -100,7 +100,7 @@ def get_psd_contact_info():
                       'Roxborough High School','Bodine International Affairs','Randolph Technical High School','CAPA','Central High School',
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
                       'Samuel Fels High School','William L. Sayre High School','George Washington High School','Science Leadership Academy',
-                      'Kensington Health Sciences Academy High School','Philadelphia Military Academy',
+                      'Kensington Health Sciences Academy High School','Philadelphia Military Academy', 'Murrell Dobbins Vocational School',
                       'Science Leadership Academy at Beeber (6-12)']:
             contact_info[school]=dict()
             couns_req = None
@@ -123,20 +123,28 @@ def get_psd_contact_info():
                     print(link)
                     couns_req=requests.get(str(link))
                     break
-            if couns_req.status_code==200:
+            if couns_req.status_code>=200 and couns_req.status_code<300:
                 soup=BeautifulSoup(couns_req.text,'html.parser')
-                if school == 'South Philadelphia High School':
+                if school in ['South Philadelphia High School', 'Murrell Dobbins Vocational School']:
                     p_tags=soup.find_all('p')
                     i = 0
                     num_p_tags=len(p_tags)
                     while i<num_p_tags:
                         tag_txt = p_tags[i].text
-                        if 'Counselor' in tag_txt:
-                            name = tag_txt[:tag_txt.find('(')-1]
-                            i+=2
-                            tag_txt=p_tags[i].text
-                            contact_info[school][name]=[tag_txt[tag_txt.find(':')+2:],None]
-                        i+=1   
+                        if (school=='South Philadelphia High School' and 'Counselor' in tag_txt) or school=='Murrell Dobbins Vocational School':
+                            name = tag_txt
+                            if school=='South Philadelphia High School':
+                                name = tag_txt[:tag_txt.find('(')-1]
+                            i+=1
+                            a_tag = p_tags[i].find('a')
+                            if not a_tag:
+                                i+=1
+                                tag_txt=p_tags[i].text
+                                if school=='South Philadelphia High School':
+                                    contact_info[school][name]=[tag_txt[tag_txt.find(':')+2:],None]
+                                elif 'Counsel' in p_tags[i-1].text:
+                                    contact_info[school][name]=[p_tags[i].find('a').text,None]
+                        i+=1
                 elif school == 'GAMP':
                     p_tags=soup.find_all('p')
                     for tag in p_tags:
@@ -228,7 +236,6 @@ def get_psd_contact_info():
                         tag_txt=tag.text
                         if a_tag and ('Counselor' in tag_txt or 'Special Education' in tag_txt) and 'LS' not in tag_txt:
                             contact_info[school][a_tag.text]=[a_tag.get('href').strip('mailto:'),None]
-                    print(contact_info)
 
     return contact_info
                     

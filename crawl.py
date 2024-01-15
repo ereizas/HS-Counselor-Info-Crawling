@@ -100,16 +100,22 @@ def get_psd_contact_info():
                       'Roxborough High School','Bodine International Affairs','Randolph Technical High School','CAPA','Central High School',
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
                       'Samuel Fels High School','William L. Sayre High School','George Washington High School',
-                      'Kensington Health Sciences Academy High School']:
+                      'Kensington Health Sciences Academy High School','Philadelphia Military Academy']:
             contact_info[school]=dict()
             couns_req = None
             suffs = ['counselors-corner','faculty-staff','counselor','counselors','support-team','staff','counseling']
-            for suff in suffs:
-                test_req=requests.get(school_to_link[school]+suff)
+            if school!='Philadelphia Military Academy':
+                for suff in suffs:
+                    test_req=requests.get(school_to_link[school]+suff)
+                    if test_req.status_code>=200 and test_req.status_code<300:
+                        print(school_to_link[school]+suff)
+                        couns_req=test_req
+                        break
+            else:
+                test_req=requests.get(school_to_link[school]+'staff')
                 if test_req.status_code>=200 and test_req.status_code<300:
-                    print(school_to_link[school]+suff)
+                    print(school_to_link[school]+'staff')
                     couns_req=test_req
-                    break
             if not couns_req:
                 links=search(query='counselor site:'+school_to_link[school],stop=1)
                 for link in links:
@@ -198,7 +204,7 @@ def get_psd_contact_info():
                         tag_txt=td_tags[i].text
                         #' x' should be a valid cutoff for the name assuming names start with a capital letter (i.e. Xavier)
                         contact_info[school][tag_txt[:tag_txt.find(' x')]]=[tag_txt[tag_txt.find('/')+2:],None]
-                elif school=='Hill-Freedman World Academy High School':
+                elif school in ['Hill-Freedman World Academy High School','Philadelphia Military Academy']:
                     get_contacts_from_sprdsheet(soup,'2','1','3',contact_info,school,False)
                 elif school=='George Washington High School':
                     p_tags=soup.find_all('p',attrs={'style':'text-align: center'})
@@ -214,7 +220,6 @@ def get_psd_contact_info():
                     a_tags = couns_table.find_all('a',string=re.compile('([A-Za-z])*@([A-Za-z0-9])*.org'))
                     for i in range(len(b_tags)):
                         contact_info[school][b_tags[i].find('u').text]=[a_tags[i].text.strip(' '),None]
-                    print(contact_info)
 
     return contact_info
                     

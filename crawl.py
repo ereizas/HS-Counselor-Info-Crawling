@@ -49,6 +49,21 @@ def get_contacts_from_li_tags(soup,contact_info,school,separator):
                 strong_tag = li_tags[j].find('strong')
             break
 
+def get_contacts_from_ul_tags(soup,school,header_num,contact_info):
+    ul_tags=soup.find_all('ul',attrs={'class':None,'id':None})[1:]
+    header_tags=soup.find_all('h'+header_num,string=re.compile('[A-Z].[a-z]+ [A-Z].[a-z]+'))
+    for i in range(len(ul_tags)):
+        header_txt = header_tags[i].text
+        colon_ind = header_txt.find(':')
+        comma_ind = header_txt.find(',')
+        len_text = len(header_txt)
+        if colon_ind==-1:
+            colon_ind=len_text
+        if comma_ind==-1:
+            comma_ind=len_text
+        end_ind = colon_ind if colon_ind<comma_ind else comma_ind
+        contact_info[school][header_txt[:end_ind]]=[ul_tags[i].find('a').text]
+
 def get_phil_sd_hs_links():
     """
     Creates list of Philadelphia school district high school links
@@ -265,7 +280,11 @@ def get_psd_contact_info():
                     contact_info[school][info_btn.text[:info_btn.text.find('-')]]=[info_btn.get('href').strip('mailto:'),'']
                 elif school=='Jules E. Mastbaum Technical High School':
                     get_contacts_from_sprdsheet(soup,'2','3','4',contact_info,school)
-                    
+                elif school == 'John Bartram High School':
+                    get_contacts_from_ul_tags(soup,school,'3',contact_info)
+                elif school=='Swenson Arts and Technology High School':
+                    get_contacts_from_ul_tags(soup,school,'4',contact_info)
+
     return contact_info
                     
             

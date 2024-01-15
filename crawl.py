@@ -51,7 +51,7 @@ def get_contacts_from_li_tags(soup,contact_info,school,separator):
 
 def get_contacts_from_ul_tags(soup,school,header_num,contact_info):
     ul_tags=soup.find_all('ul',attrs={'class':None,'id':None})[1:]
-    header_tags=soup.find_all('h'+header_num,string=re.compile('[A-Z].[a-z]+ [A-Z].[a-z]+'))
+    header_tags=soup.find_all('h'+header_num,string=re.compile('[A-Z].[a-z]* [A-Z].[a-z]*'))
     for i in range(len(ul_tags)):
         header_txt = header_tags[i].text
         colon_ind = header_txt.find(':')
@@ -118,9 +118,9 @@ def get_psd_contact_info():
                       'Penn Treaty School (6-12)','Constitution High School','Benjamin Franklin High School','Northeast High School',
                       'Roxborough High School','Bodine International Affairs','Randolph Technical High School','CAPA','Central High School',
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
-                      'Samuel Fels High School','William L. Sayre High School','George Washington High School','Science Leadership Academy',
-                      'Kensington Health Sciences Academy High School','Philadelphia Military Academy', 'Murrell Dobbins Vocational School',
-                      'Science Leadership Academy at Beeber (6-12)','High School of the Future','Kensington Creative & Performing Arts High School',
+                      'Samuel Fels High School','George Washington High School','Science Leadership Academy','Kensington Health Sciences Academy High School',
+                      'Philadelphia Military Academy', 'Murrell Dobbins Vocational School','High School of the Future',
+                      'Science Leadership Academy at Beeber (6-12)','Kensington Creative & Performing Arts High School',
                       'Parkway Northwest High School','Jules E. Mastbaum Technical High School']:
             contact_info[school]=dict()
             req = None
@@ -284,7 +284,14 @@ def get_psd_contact_info():
                     get_contacts_from_ul_tags(soup,school,'3',contact_info)
                 elif school=='Swenson Arts and Technology High School':
                     get_contacts_from_ul_tags(soup,school,'4',contact_info)
-
+                elif school=='Samuel Fels High School':
+                    tags=soup.find_all(re.compile('(^p$)|(^h3$)'))
+                    for i in range(1,len(tags),2):
+                        name = tags[i].text
+                        if not bool(re.match('^(Mrs?)|(Ms)|(Dr)\.. [A-Z].[a-z]* -',name)):
+                            break
+                        name = name[:name.find(' -')]
+                        contact_info[school][name]=[tags[i+1].find('em').text,'']
     return contact_info
                     
             

@@ -20,7 +20,7 @@ def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,conta
     rows = soup.find_all('tr',attrs={'class':re.compile("row-([2-9]|[1-9]\d{1,}) ?(even|odd)?")})
     for row in rows:
         row_text = row.find('td',attrs={'class':'column-'+job_col}).text
-        if ('Counsel' in row_text or 'SPED' in row_text or 'Special Education' in row_text) and 'MS' not in row_text:
+        if ('Counsel' in row_text or 'SPED' in row_text or 'Special Education' in row_text) and 'MS' not in row_text and 'Bilingual' not in row_text:
             names = row.find('td',attrs={'class':'column-'+name_cols[0]}).text.split('\n')
             for i in range(1,len(name_cols)):
                 new_names = row.find('td',attrs={'class':'column-'+name_cols[i]}).text.split('\n')
@@ -106,21 +106,26 @@ def get_psd_contact_info():
                       'Samuel Fels High School','William L. Sayre High School','George Washington High School','Science Leadership Academy',
                       'Kensington Health Sciences Academy High School','Philadelphia Military Academy', 'Murrell Dobbins Vocational School',
                       'Science Leadership Academy at Beeber (6-12)','High School of the Future','Kensington Creative & Performing Arts High School',
-                      'Parkway Northwest High School']:
+                      'Parkway Northwest High School','Jules E. Mastbaum Technical High School']:
             contact_info[school]=dict()
             req = None
-            suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty']
-            if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School']:
+            suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty','contact-us']
+            if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School','Jules E. Mastbaum Technical High School']:
                 for suff in suffs:
                     test_req=requests.get(school_to_link[school]+suff)
                     if test_req.status_code>=200 and test_req.status_code<300:
                         print(school_to_link[school]+suff)
                         req=test_req
                         break
-            else:
+            elif school!='Jules E. Mastbaum Technical High School':
                 test_req=requests.get(school_to_link[school]+'staff')
                 if test_req.status_code>=200 and test_req.status_code<300:
                     print(school_to_link[school]+'staff')
+                    req=test_req
+            else:
+                test_req=requests.get(school_to_link[school]+'contact-us')
+                if test_req.status_code>=200 and test_req.status_code<300:
+                    print(school_to_link[school]+'contact-us')
                     req=test_req
             if not req:
                 links=search(query='counselor site:'+school_to_link[school],stop=1)
@@ -258,7 +263,8 @@ def get_psd_contact_info():
                 elif school=='Parkway Northwest High School':
                     info_btn = soup.find('a',attrs={'class':'vc_general vc_btn3 vc_btn3-size-md vc_btn3-shape-rounded vc_btn3-style-modern vc_btn3-color-sandy-brown'})
                     contact_info[school][info_btn.text[:info_btn.text.find('-')]]=[info_btn.get('href').strip('mailto:'),'']
-                    print(contact_info)
+                elif school=='Jules E. Mastbaum Technical High School':
+                    get_contacts_from_sprdsheet(soup,'2','3','4',contact_info,school)
                     
     return contact_info
                     

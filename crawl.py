@@ -16,16 +16,20 @@ def google_search_school(query,qualifying_str):
             return link[:link.find('.org/')+6]
     return None
 
-def get_contacts_from_sprdsheet(soup,job_col,name_col,email_col,contact_info,school,rvrs_order):
+def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,contact_info,school,name_rvrs_order=False):
     rows = soup.find_all('tr',attrs={'class':re.compile("row-([2-9]|[1-9]\d{1,}) ?(even|odd)?")})
     for row in rows:
         row_text = row.find('td',attrs={'class':'column-'+job_col}).text
-        if 'Counsel' in row_text and 'MS' not in row_text:
-            names = row.find('td',attrs={'class':'column-'+name_col}).text.split('\n')
+        if ('Counsel' in row_text or 'SPED' in row_text or 'Special Education' in row_text) and 'MS' not in row_text:
+            names = row.find('td',attrs={'class':'column-'+name_cols[0]}).text.split('\n')
+            for i in range(1,len(name_cols)):
+                new_names = row.find('td',attrs={'class':'column-'+name_cols[i]}).text.split('\n')
+                for j in range(len(names)):
+                    names[j]+=' '+new_names[j]
             emails = row.find('td',attrs={'class':'column-'+email_col}).text.split('\n')
             i = 0
             for i in range(len(names)):
-                if rvrs_order:
+                if name_rvrs_order:
                     names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
                 contact_info[school][names[i]]=[emails[i],None]
 
@@ -101,7 +105,7 @@ def get_psd_contact_info():
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
                       'Samuel Fels High School','William L. Sayre High School','George Washington High School','Science Leadership Academy',
                       'Kensington Health Sciences Academy High School','Philadelphia Military Academy', 'Murrell Dobbins Vocational School',
-                      'Science Leadership Academy at Beeber (6-12)']:
+                      'Science Leadership Academy at Beeber (6-12)','High School of the Future']:
             contact_info[school]=dict()
             couns_req = None
             suffs = ['counselors-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty']
@@ -157,9 +161,9 @@ def get_psd_contact_info():
                     for row in rows:
                         contact_info[school][row.find('td',attrs={'class':'column-1'}).text]=[row.find('td',attrs={'class':'column-4'}).text]
                 elif school=='Kensington High School':
-                    get_contacts_from_sprdsheet(soup,'4','1','5',contact_info,school,True)
+                    get_contacts_from_sprdsheet(soup,'4',['1'],'5',contact_info,school,True)
                 elif school in ['Penn Treaty School (6-12)','Constitution High School']:
-                    get_contacts_from_sprdsheet(soup,'1','2','3',contact_info,school,False)
+                    get_contacts_from_sprdsheet(soup,'1',['2'],'3',contact_info,school)
                 elif school=='Benjamin Franklin High School':
                     strong_tags=soup.find_all('strong')[2:]
                     for tag in strong_tags:
@@ -214,7 +218,7 @@ def get_psd_contact_info():
                         #' x' should be a valid cutoff for the name assuming names start with a capital letter (i.e. Xavier)
                         contact_info[school][tag_txt[:tag_txt.find(' x')]]=[tag_txt[tag_txt.find('/')+2:],None]
                 elif school in ['Hill-Freedman World Academy High School','Philadelphia Military Academy','The LINC']:
-                    get_contacts_from_sprdsheet(soup,'2','1','3',contact_info,school,False)
+                    get_contacts_from_sprdsheet(soup,'2','1','3',contact_info,school)
                 elif school=='George Washington High School':
                     p_tags=soup.find_all('p',attrs={'style':'text-align: center'})
                     for i in range(1,len(p_tags)):
@@ -236,6 +240,8 @@ def get_psd_contact_info():
                         tag_txt=tag.text
                         if a_tag and ('Counselor' in tag_txt or 'Special Education' in tag_txt) and 'LS' not in tag_txt:
                             contact_info[school][a_tag.text]=[a_tag.get('href').strip('mailto:'),None]
+                elif school=='High School of the Future':
+                    get_contacts_from_sprdsheet(soup,'3',['1','2'],'4',contact_info,school)
 
     return contact_info
                     

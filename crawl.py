@@ -99,10 +99,11 @@ def get_psd_contact_info():
                       'Penn Treaty School (6-12)','Constitution High School','Benjamin Franklin High School','Northeast High School',
                       'Roxborough High School','Bodine International Affairs','Randolph Technical High School','CAPA','Central High School',
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
-                      'Samuel Fels High School','William L. Sayre High School','George Washington High School']:
+                      'Samuel Fels High School','William L. Sayre High School','George Washington High School',
+                      'Kensington Health Sciences Academy High School']:
             contact_info[school]=dict()
             couns_req = None
-            suffs = ['counselors-corner','faculty-staff','counselor','counselors','support-team','staff']
+            suffs = ['counselors-corner','faculty-staff','counselor','counselors','support-team','staff','counseling']
             for suff in suffs:
                 test_req=requests.get(school_to_link[school]+suff)
                 if test_req.status_code>=200 and test_req.status_code<300:
@@ -207,6 +208,12 @@ def get_psd_contact_info():
                             a_tag = p_tags[i].find('a')
                             if  a_tag:
                                 contact_info[school][tag_txt[:tag_txt.find('\n')]]=[a_tag.text.strip('\xa0'),None]
+                elif school=='Kensington Health Sciences Academy High School':
+                    couns_table = soup.find('table',attrs={'id':'tablepress-4'})
+                    b_tags = couns_table.find_all('b')
+                    a_tags = couns_table.find_all('a',string=re.compile('([A-Za-z])*@([A-Za-z0-9])*.org'))
+                    for i in range(len(b_tags)):
+                        contact_info[school][b_tags[i].find('u').text]=[a_tags[i].text.strip(' '),None]
                     print(contact_info)
 
     return contact_info

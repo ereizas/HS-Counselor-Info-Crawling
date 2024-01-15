@@ -105,30 +105,30 @@ def get_psd_contact_info():
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
                       'Samuel Fels High School','William L. Sayre High School','George Washington High School','Science Leadership Academy',
                       'Kensington Health Sciences Academy High School','Philadelphia Military Academy', 'Murrell Dobbins Vocational School',
-                      'Science Leadership Academy at Beeber (6-12)','High School of the Future']:
+                      'Science Leadership Academy at Beeber (6-12)','High School of the Future','Kensington Creative & Performing Arts High School']:
             contact_info[school]=dict()
-            couns_req = None
+            req = None
             suffs = ['counselors-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty']
-            if school!='Philadelphia Military Academy':
+            if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School']:
                 for suff in suffs:
                     test_req=requests.get(school_to_link[school]+suff)
                     if test_req.status_code>=200 and test_req.status_code<300:
                         print(school_to_link[school]+suff)
-                        couns_req=test_req
+                        req=test_req
                         break
             else:
                 test_req=requests.get(school_to_link[school]+'staff')
                 if test_req.status_code>=200 and test_req.status_code<300:
                     print(school_to_link[school]+'staff')
-                    couns_req=test_req
-            if not couns_req:
+                    req=test_req
+            if not req:
                 links=search(query='counselor site:'+school_to_link[school],stop=1)
                 for link in links:
                     print(link)
-                    couns_req=requests.get(str(link))
+                    req=requests.get(str(link))
                     break
-            if couns_req.status_code>=200 and couns_req.status_code<300:
-                soup=BeautifulSoup(couns_req.text,'html.parser')
+            if req.status_code>=200 and req.status_code<300:
+                soup=BeautifulSoup(req.text,'html.parser')
                 if school in ['South Philadelphia High School', 'Murrell Dobbins Vocational School']:
                     p_tags=soup.find_all('p')
                     i = 0
@@ -157,7 +157,7 @@ def get_psd_contact_info():
                             #long dash is used not short dash
                             contact_info[school][tag_txt[4:tag_txt.find('–')-1]]=[tag_txt[tag_txt.find('–')+2:],None]
                 elif school == 'Thomas A. Edison High School':
-                    rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9]+\d* (even|odd)")})
+                    rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9].\d* (even|odd)")})
                     for row in rows:
                         contact_info[school][row.find('td',attrs={'class':'column-1'}).text]=[row.find('td',attrs={'class':'column-4'}).text]
                 elif school=='Kensington High School':
@@ -242,7 +242,20 @@ def get_psd_contact_info():
                             contact_info[school][a_tag.text]=[a_tag.get('href').strip('mailto:'),None]
                 elif school=='High School of the Future':
                     get_contacts_from_sprdsheet(soup,'3',['1','2'],'4',contact_info,school)
-
+                elif school=='Kensington Creative & Performing Arts High School':
+                    a_tags=soup.find_all('a',attrs={'data-vc-container':'.vc_tta','data-vc-tabs':''})
+                    panels = soup.find_all('div',attrs={'class':'vc_tta-panel-body'})
+                    panels = [panels[i] for i in range(len(a_tags)) if 'Support' in a_tags[i].find('span').text]
+                    for panel in panels:
+                        h2_tags=panel.find_all('h2')
+                        h3_tags=panel.find_all('h3')
+                        div_tags=panel.find_all('div',attrs={'class':'vc_toggle_content'})
+                        for i in range(len(h2_tags)):
+                            tag_txt = h2_tags[i].text
+                            if 'Counselor' in tag_txt or 'SPED' in tag_txt or 'Special Education' in tag_txt:
+                                contact_info[school][h3_tags[i].text]=[div_tags[i].find('p').text,None]
+                    print(contact_info)
+                    
     return contact_info
                     
             

@@ -100,7 +100,8 @@ def get_psd_contact_info():
                       'Roxborough High School','Bodine International Affairs','Randolph Technical High School','CAPA','Central High School',
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
                       'Samuel Fels High School','William L. Sayre High School','George Washington High School','Science Leadership Academy',
-                      'Kensington Health Sciences Academy High School','Philadelphia Military Academy']:
+                      'Kensington Health Sciences Academy High School','Philadelphia Military Academy',
+                      'Science Leadership Academy at Beeber (6-12)']:
             contact_info[school]=dict()
             couns_req = None
             suffs = ['counselors-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty']
@@ -220,12 +221,12 @@ def get_psd_contact_info():
                     a_tags = couns_table.find_all('a',string=re.compile('([A-Za-z])*@([A-Za-z0-9])*.org'))
                     for i in range(len(b_tags)):
                         contact_info[school][b_tags[i].find('u').text]=[a_tags[i].text.strip(' '),None]
-                elif school=='Science Leadership Academy':
+                elif school in ['Science Leadership Academy','Science Leadership Academy at Beeber (6-12)']:
                     p_tags = soup.find_all('p')
                     for tag in p_tags:
                         a_tag=tag.find('a',attrs={'href':re.compile('([A-Za-z])*@([A-Za-z0-9])*.org')})
                         tag_txt=tag.text
-                        if a_tag and ('Counselor' in tag_txt or 'Special Education' in tag_txt):
+                        if a_tag and ('Counselor' in tag_txt or 'Special Education' in tag_txt) and 'LS' not in tag_txt:
                             contact_info[school][a_tag.text]=[a_tag.get('href').strip('mailto:'),None]
                     print(contact_info)
 

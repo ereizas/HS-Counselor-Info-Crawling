@@ -95,7 +95,7 @@ def get_psd_contact_info():
     #school mapped to dict of names mapped to email and phone #
     contact_info = dict()
     for school in school_to_link:
-        if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School',
+        if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School', 'The LINC',
                       'Penn Treaty School (6-12)','Constitution High School','Benjamin Franklin High School','Northeast High School',
                       'Roxborough High School','Bodine International Affairs','Randolph Technical High School','CAPA','Central High School',
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
@@ -205,7 +205,7 @@ def get_psd_contact_info():
                         tag_txt=td_tags[i].text
                         #' x' should be a valid cutoff for the name assuming names start with a capital letter (i.e. Xavier)
                         contact_info[school][tag_txt[:tag_txt.find(' x')]]=[tag_txt[tag_txt.find('/')+2:],None]
-                elif school in ['Hill-Freedman World Academy High School','Philadelphia Military Academy']:
+                elif school in ['Hill-Freedman World Academy High School','Philadelphia Military Academy','The LINC']:
                     get_contacts_from_sprdsheet(soup,'2','1','3',contact_info,school,False)
                 elif school=='George Washington High School':
                     p_tags=soup.find_all('p',attrs={'style':'text-align: center'})

@@ -49,9 +49,12 @@ def get_contacts_from_li_tags(soup,contact_info,school,separator):
                 strong_tag = li_tags[j].find('strong')
             break
 
-def get_contacts_from_ul_tags(soup,school,header_num,contact_info):
+def get_contacts_from_ul_tags(soup,school,header_num,contact_info,title_included=False):
     ul_tags=soup.find_all('ul',attrs={'class':None,'id':None})[1:]
-    header_tags=soup.find_all('h'+header_num,string=re.compile('^(Mrs?)|(Ms)|(Dr)\. [A-Z].[a-z]* [A-Z].[a-z]*'))
+    regex = '^[A-Z].[a-z]* [A-Z].[a-z]*'
+    if title_included:
+        regex='^(Mrs?)|(Ms)|(Dr)\. [A-Z].[a-z]* [A-Z].[a-z]*'
+    header_tags=soup.find_all('h'+header_num,string=re.compile(regex))
     for i in range(len(ul_tags)):
         header_txt = header_tags[i].text
         colon_ind = header_txt.find(':')
@@ -111,7 +114,7 @@ def get_phil_sd_hs_links():
 
 def get_psd_contact_info():
     #school_to_link={'John Bartram High School': 'https://bartram.philasd.org/', 'Thomas A. Edison High School': 'https://edison.philasd.org/', 'Samuel Fels High School': 'https://fels.philasd.org/', 'Frankford High School': 'https://frankfordhs.philasd.org/', 'Benjamin Franklin High School': 'https://bfhs.philasd.org/', 'Horace Furness High School': 'https://furness.philasd.org/', 'Kensington High School': 'https://kensingtonhs.philasd.org/', 'Martin Luther King High School': 'https://mlkhs.philasd.org/', 'Abraham Lincoln High School': 'https://lincoln.philasd.org/', 'Northeast High School': 'https://nehs.philasd.org/', 'Overbrook High School': 'https://overbrookhs.philasd.org/', 'Penn Treaty School (6-12)': 'https://penntreaty.philasd.org/', 'Roxborough High School': 'https://roxboroughhs.philasd.org/', 'William L. Sayre High School': 'https://sayre.philasd.org/', 'South Philadelphia High School': 'https://sphs.philasd.org/', 'Strawberry Mansion High School': 'https://smhs.philasd.org/', 'George Washington High School': 'https://gwhs.philasd.org/', 'West Philadelphia High School': 'https://wphs.philasd.org/', 'Academy at Palumbo': 'https://palumbo.philasd.org/', 'The Arts Academy at Benjamin Rush': 'https://rush.philasd.org/', 'Bodine International Affairs': 'https://bodine.philasd.org/', 'CAPA': 'https://capa.philasd.org/', 'Carver High School for Engineering and Science': 'https://hses.philasd.org/', 'Central High School': 'https://centralhs.philasd.org/', 'GAMP': 'https://gamp.philasd.org/', 'Franklin Learning Center': 'https://flc.philasd.org/', 'Hill-Freedman World Academy High School': 'https://hfwa.philasd.org/', 'Julia R. Masterman School': 'https://masterman.philasd.org/', 'Kensington Creative & Performing Arts High School': 'https://kcapa.philasd.org/', 'Kensington Health Sciences Academy High School': 'https://khsa.philasd.org/', 'Parkway Center City High School': 'https://parkwaycc.philasd.org/', 'Parkway Northwest High School': 'https://parkwaynw.philasd.org/', 'Parkway West High School': 'https://parkwaywest.philasd.org/', 'Philadelphia High School for Girls': 'https://girlshs.philasd.org/', 'Philadelphia Learning Academy': 'https://planorth.philasd.org/', 'Philadelphia Military Academy': 'https://pma.philasd.org/', 'Philadelphia Virtual Academy': 'https://pva.philasd.org/', 'Science Leadership Academy': 'https://sla.philasd.org/', 'Science Leadership Academy at Beeber (6-12)': 'https://slabeeber.philasd.org/', 'The LINC': 'https://thelinc.philasd.org/', 'Walter Biddle Saul High School for Agricultural Sciences': 'https://saul.philasd.org/', 'Building 21': 'https://building21.philasd.org/', 'Constitution High School': 'https://constitutionhs.philasd.org/', 'Murrell Dobbins Vocational School': 'https://dobbins.philasd.org/', 'High School of the Future': 'https://sof.philasd.org/', 'Lankenau High School': 'https://lankenau.philasd.org/', 'Jules E. Mastbaum Technical High School': 'https://mastbaum.philasd.org/', 'Motivation High School': 'https://motivationhs.philasd.org/', 'Paul Robeson High School for Human Services': 'https://robeson.philasd.org/', 'Randolph Technical High School': 'https://randolph.philasd.org/', 'The U School': 'https://uschool.philasd.org/', 'The Workshop School': 'https://workshopschool.philasd.org/', 'Swenson Arts and Technology High School': 'https://swenson.philasd.org/', 'Vaux Big Picture High School': 'https://vaux.philasd.org/'}
-    school_to_link={'John Bartram High School': 'https://bartram.philasd.org/'}
+    school_to_link={'John Bartram High School': 'https://bartram.philasd.org/','Swenson Arts and Technology High School': 'https://swenson.philasd.org/'}
     #school mapped to dict of names mapped to email and phone #
     contact_info = dict()
     for school in school_to_link:
@@ -286,7 +289,7 @@ def get_psd_contact_info():
                 elif school=='Jules E. Mastbaum Technical High School':
                     get_contacts_from_sprdsheet(soup,'2','3','4',contact_info,school)
                 elif school == 'John Bartram High School':
-                    get_contacts_from_ul_tags(soup,school,'3',contact_info)
+                    get_contacts_from_ul_tags(soup,school,'3',contact_info,True)
                 elif school=='Swenson Arts and Technology High School':
                     get_contacts_from_ul_tags(soup,school,'4',contact_info)
                 elif school=='Samuel Fels High School':

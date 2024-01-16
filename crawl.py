@@ -29,12 +29,13 @@ def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,conta
             emails = row.find('td',attrs={'class':'column-'+email_col}).text.split('\n')
             i = 0
             for i in range(len(names)):
-                if name_rvrs_order:
-                    if '(' not in names[i]:
-                        names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
-                    else:
-                        names[i]=names[i][:names[i].find('(')]
-                contact_info[school][names[i]]=emails[i]
+                if emails[i]:
+                    if name_rvrs_order:
+                        if '(' not in names[i]:
+                            names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
+                        else:
+                            names[i]=names[i][:names[i].find('(')]
+                    contact_info[school][names[i]]=emails[i]
 
 def get_contacts_from_li_tags(soup,contact_info,school,separator):
     li_tags=soup.find_all('li',attrs={'class':None,'id':None})

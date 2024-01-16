@@ -31,7 +31,7 @@ def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,conta
             for i in range(len(names)):
                 if name_rvrs_order:
                     names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
-                contact_info[school][names[i]]=[emails[i],'']
+                contact_info[school][names[i]]=[emails[i]]
 
 def get_contacts_from_li_tags(soup,contact_info,school,separator):
     li_tags=soup.find_all('li',attrs={'class':None,'id':None})
@@ -44,7 +44,7 @@ def get_contacts_from_li_tags(soup,contact_info,school,separator):
                 tag_txt=li_tags[j].text
                 separator_ind = tag_txt.find(separator)
                 name = tag_txt[:separator_ind-1]
-                contact_info[school][name]=[tag_txt[separator_ind+1:-1],'']
+                contact_info[school][name]=[tag_txt[separator_ind+1:-1]]
                 j+=1
                 strong_tag = li_tags[j].find('strong')
             break
@@ -110,8 +110,8 @@ def get_phil_sd_hs_links():
     return school_to_link
 
 def get_psd_contact_info():
-    #school_to_link={'John Bartram High School': 'https://bartram.philasd.org/', 'Thomas A. Edison High School': 'https://edison.philasd.org/', 'Samuel Fels High School': 'https://fels.philasd.org/', 'Frankford High School': 'https://frankfordhs.philasd.org/', 'Benjamin Franklin High School': 'https://bfhs.philasd.org/', 'Horace Furness High School': 'https://furness.philasd.org/', 'Kensington High School': 'https://kensingtonhs.philasd.org/', 'Martin Luther King High School': 'https://mlkhs.philasd.org/', 'Abraham Lincoln High School': 'https://lincoln.philasd.org/', 'Northeast High School': 'https://nehs.philasd.org/', 'Overbrook High School': 'https://overbrookhs.philasd.org/', 'Penn Treaty School (6-12)': 'https://penntreaty.philasd.org/', 'Roxborough High School': 'https://roxboroughhs.philasd.org/', 'William L. Sayre High School': 'https://sayre.philasd.org/', 'South Philadelphia High School': 'https://sphs.philasd.org/', 'Strawberry Mansion High School': 'https://smhs.philasd.org/', 'George Washington High School': 'https://gwhs.philasd.org/', 'West Philadelphia High School': 'https://wphs.philasd.org/', 'Academy at Palumbo': 'https://palumbo.philasd.org/', 'The Arts Academy at Benjamin Rush': 'https://rush.philasd.org/', 'Bodine International Affairs': 'https://bodine.philasd.org/', 'CAPA': 'https://capa.philasd.org/', 'Carver High School for Engineering and Science': 'https://hses.philasd.org/', 'Central High School': 'https://centralhs.philasd.org/', 'GAMP': 'https://gamp.philasd.org/', 'Franklin Learning Center': 'https://flc.philasd.org/', 'Hill-Freedman World Academy High School': 'https://hfwa.philasd.org/', 'Julia R. Masterman School': 'https://masterman.philasd.org/', 'Kensington Creative & Performing Arts High School': 'https://kcapa.philasd.org/', 'Kensington Health Sciences Academy High School': 'https://khsa.philasd.org/', 'Parkway Center City High School': 'https://parkwaycc.philasd.org/', 'Parkway Northwest High School': 'https://parkwaynw.philasd.org/', 'Parkway West High School': 'https://parkwaywest.philasd.org/', 'Philadelphia High School for Girls': 'https://girlshs.philasd.org/', 'Philadelphia Learning Academy': 'https://planorth.philasd.org/', 'Philadelphia Military Academy': 'https://pma.philasd.org/', 'Philadelphia Virtual Academy': 'https://pva.philasd.org/', 'Science Leadership Academy': 'https://sla.philasd.org/', 'Science Leadership Academy at Beeber (6-12)': 'https://slabeeber.philasd.org/', 'The LINC': 'https://thelinc.philasd.org/', 'Walter Biddle Saul High School for Agricultural Sciences': 'https://saul.philasd.org/', 'Building 21': 'https://building21.philasd.org/', 'Constitution High School': 'https://constitutionhs.philasd.org/', 'Murrell Dobbins Vocational School': 'https://dobbins.philasd.org/', 'High School of the Future': 'https://sof.philasd.org/', 'Lankenau High School': 'https://lankenau.philasd.org/', 'Jules E. Mastbaum Technical High School': 'https://mastbaum.philasd.org/', 'Motivation High School': 'https://motivationhs.philasd.org/', 'Paul Robeson High School for Human Services': 'https://robeson.philasd.org/', 'Randolph Technical High School': 'https://randolph.philasd.org/', 'The U School': 'https://uschool.philasd.org/', 'The Workshop School': 'https://workshopschool.philasd.org/', 'Swenson Arts and Technology High School': 'https://swenson.philasd.org/', 'Vaux Big Picture High School': 'https://vaux.philasd.org/'}
-    school_to_link={'Kensington Health Sciences Academy High School': 'https://khsa.philasd.org/'}
+    school_to_link={'John Bartram High School': 'https://bartram.philasd.org/', 'Thomas A. Edison High School': 'https://edison.philasd.org/', 'Samuel Fels High School': 'https://fels.philasd.org/', 'Frankford High School': 'https://frankfordhs.philasd.org/', 'Benjamin Franklin High School': 'https://bfhs.philasd.org/', 'Horace Furness High School': 'https://furness.philasd.org/', 'Kensington High School': 'https://kensingtonhs.philasd.org/', 'Martin Luther King High School': 'https://mlkhs.philasd.org/', 'Abraham Lincoln High School': 'https://lincoln.philasd.org/', 'Northeast High School': 'https://nehs.philasd.org/', 'Overbrook High School': 'https://overbrookhs.philasd.org/', 'Penn Treaty School (6-12)': 'https://penntreaty.philasd.org/', 'Roxborough High School': 'https://roxboroughhs.philasd.org/', 'William L. Sayre High School': 'https://sayre.philasd.org/', 'South Philadelphia High School': 'https://sphs.philasd.org/', 'Strawberry Mansion High School': 'https://smhs.philasd.org/', 'George Washington High School': 'https://gwhs.philasd.org/', 'West Philadelphia High School': 'https://wphs.philasd.org/', 'Academy at Palumbo': 'https://palumbo.philasd.org/', 'The Arts Academy at Benjamin Rush': 'https://rush.philasd.org/', 'Bodine International Affairs': 'https://bodine.philasd.org/', 'CAPA': 'https://capa.philasd.org/', 'Carver High School for Engineering and Science': 'https://hses.philasd.org/', 'Central High School': 'https://centralhs.philasd.org/', 'GAMP': 'https://gamp.philasd.org/', 'Franklin Learning Center': 'https://flc.philasd.org/', 'Hill-Freedman World Academy High School': 'https://hfwa.philasd.org/', 'Julia R. Masterman School': 'https://masterman.philasd.org/', 'Kensington Creative & Performing Arts High School': 'https://kcapa.philasd.org/', 'Kensington Health Sciences Academy High School': 'https://khsa.philasd.org/', 'Parkway Center City High School': 'https://parkwaycc.philasd.org/', 'Parkway Northwest High School': 'https://parkwaynw.philasd.org/', 'Parkway West High School': 'https://parkwaywest.philasd.org/', 'Philadelphia High School for Girls': 'https://girlshs.philasd.org/', 'Philadelphia Learning Academy': 'https://planorth.philasd.org/', 'Philadelphia Military Academy': 'https://pma.philasd.org/', 'Philadelphia Virtual Academy': 'https://pva.philasd.org/', 'Science Leadership Academy': 'https://sla.philasd.org/', 'Science Leadership Academy at Beeber (6-12)': 'https://slabeeber.philasd.org/', 'The LINC': 'https://thelinc.philasd.org/', 'Walter Biddle Saul High School for Agricultural Sciences': 'https://saul.philasd.org/', 'Building 21': 'https://building21.philasd.org/', 'Constitution High School': 'https://constitutionhs.philasd.org/', 'Murrell Dobbins Vocational School': 'https://dobbins.philasd.org/', 'High School of the Future': 'https://sof.philasd.org/', 'Lankenau High School': 'https://lankenau.philasd.org/', 'Jules E. Mastbaum Technical High School': 'https://mastbaum.philasd.org/', 'Motivation High School': 'https://motivationhs.philasd.org/', 'Paul Robeson High School for Human Services': 'https://robeson.philasd.org/', 'Randolph Technical High School': 'https://randolph.philasd.org/', 'The U School': 'https://uschool.philasd.org/', 'The Workshop School': 'https://workshopschool.philasd.org/', 'Swenson Arts and Technology High School': 'https://swenson.philasd.org/', 'Vaux Big Picture High School': 'https://vaux.philasd.org/'}
+    #school_to_link={'Kensington Health Sciences Academy High School': 'https://khsa.philasd.org/'}
     #school mapped to dict of names mapped to email and phone #
     contact_info = dict()
     for school in school_to_link:
@@ -167,9 +167,9 @@ def get_psd_contact_info():
                                 i+=1
                                 tag_txt=p_tags[i].text
                                 if school=='South Philadelphia High School':
-                                    contact_info[school][name]=[tag_txt[tag_txt.find(':')+2:],'']
-                                elif 'Counsel' in p_tags[i-1].text:
-                                    contact_info[school][name]=[p_tags[i].find('a').text,'']
+                                    contact_info[school][name]=[tag_txt[tag_txt.find(':')+2:]]
+                                elif 'Counsel' in p_tags[i-1].text or 'Special Education' in p_tags[i-1].text or 'SPED' in p_tags[i-1].text:
+                                    contact_info[school][name]=[p_tags[i].find('a').text]
                         i+=1
                 elif school == 'GAMP':
                     p_tags=soup.find_all('p')
@@ -177,7 +177,7 @@ def get_psd_contact_info():
                         tag_txt = tag.text
                         if '@' in tag_txt:
                             #long dash is used not short dash
-                            contact_info[school][tag_txt[4:tag_txt.find('–')-1]]=[tag_txt[tag_txt.find('–')+2:],'']
+                            contact_info[school][tag_txt[4:tag_txt.find('–')-1]]=[tag_txt[tag_txt.find('–')+2:]]
                 elif school == 'Thomas A. Edison High School':
                     rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9].\d* (even|odd)")})
                     for row in rows:
@@ -190,27 +190,27 @@ def get_psd_contact_info():
                     strong_tags=soup.find_all('strong')[2:]
                     for tag in strong_tags:
                         tag_txt=tag.text
-                        contact_info[school][tag_txt[:tag_txt.find('–')-1]]=[tag_txt[tag_txt.find('–')+2:],'']
+                        contact_info[school][tag_txt[:tag_txt.find('–')-1]]=[tag_txt[tag_txt.find('–')+2:]]
                 elif school=='Northeast High School':
                     #first two rows initialize the style
                     span_tags = soup.find_all('span',attrs={'style':re.compile('font-weight: (\d)*')})
-                    contact_info[school][span_tags[8].text]=[span_tags[11].text,'']
+                    contact_info[school][span_tags[8].text]=[span_tags[11].text]
                     #next rows have a different tag
                     td_tags = soup.find_all('td',attrs={'style':re.compile('height: (\d)*px;width: (\d)*px')})
                     for i in range(11,len(td_tags),5):
-                        contact_info[school][td_tags[i].text.strip('\xa0')]=[td_tags[i+3].text.strip('\xa0'),'']
+                        contact_info[school][td_tags[i].text.strip('\xa0')]=[td_tags[i+3].text.strip('\xa0')]
                 elif school=='Roxborough High School':
                     h3_tags = soup.find_all('h3')
                     num_tags=len(h3_tags)
                     for i in range(0,num_tags,2):
                         if i+1<num_tags:
-                            contact_info[school][h3_tags[i].text]=[h3_tags[i+1].text,'']
+                            contact_info[school][h3_tags[i].text]=[h3_tags[i+1].text]
                 elif school=='Bodine International Affairs':
                     li_tags=soup.find_all('li',attrs={'class':None,'id':None})
                     for tag in li_tags:
                         tag_txt=tag.text
                         if 'Counselor' in tag_txt or 'Special Education' in tag_txt:
-                            contact_info[school][tag_txt[:tag_txt.find(',')]]=[tag_txt[tag_txt.rfind(',')+2:],'']
+                            contact_info[school][tag_txt[:tag_txt.find(',')]]=[tag_txt[tag_txt.rfind(',')+2:]]
                 elif school=='Randolph Technical High School':
                     li_tags=soup.find_all('li',attrs={'class':None,'id':None})
                     for i in range(len(li_tags)):
@@ -221,7 +221,7 @@ def get_psd_contact_info():
                             while not strong_tag:
                                 tag_txt=li_tags[j].text
                                 separator_ind = tag_txt.find('(')
-                                contact_info[school][tag_txt[:separator_ind-1]]=[tag_txt[separator_ind+1:-1],'']
+                                contact_info[school][tag_txt[:separator_ind-1]]=[tag_txt[separator_ind+1:-1]]
                                 j+=1
                                 strong_tag = li_tags[j].find('strong')
                             break
@@ -232,13 +232,13 @@ def get_psd_contact_info():
                         name = tag_txt[6:]
                         dot_ind = name.find('.')
                         name = name[0]+name[1:dot_ind+2].lower()+name[dot_ind+2]+name[dot_ind+3:].lower()
-                        contact_info[school][name]=[tag.get('href'),'']
+                        contact_info[school][name]=[tag.get('href')]
                 elif school=='Central High School':
                     td_tags=soup.find_all('td',attrs={'style':'text-align: center'})
                     for i in range(3,len(td_tags),2):
                         tag_txt=td_tags[i].text
                         #' x' should be a valid cutoff for the name assuming names start with a capital letter (i.e. Xavier)
-                        contact_info[school][tag_txt[:tag_txt.find(' x')]]=[tag_txt[tag_txt.find('/')+2:],'']
+                        contact_info[school][tag_txt[:tag_txt.find(' x')]]=[tag_txt[tag_txt.find('/')+2:]]
                 elif school in ['Hill-Freedman World Academy High School','Philadelphia Military Academy','The LINC']:
                     get_contacts_from_sprdsheet(soup,'2','1','3',contact_info,school)
                 elif school=='George Washington High School':
@@ -248,7 +248,7 @@ def get_psd_contact_info():
                         if 'Counsel' in tag_txt:
                             a_tag = p_tags[i].find('a')
                             if  a_tag:
-                                contact_info[school][tag_txt[:tag_txt.find('\n')]]=[a_tag.text.strip('\xa0'),'']
+                                contact_info[school][tag_txt[:tag_txt.find('\n')]]=[a_tag.text.strip('\xa0')]
                 elif school=='Kensington Health Sciences Academy High School':
                     tags = soup.find_all(re.compile('th|td'),attrs={'class':re.compile('column-\d|^$')})
                     for tag in tags:
@@ -258,14 +258,14 @@ def get_psd_contact_info():
                             end_ind = tag_txt.find('\n',begin_ind+1)
                             job_str = tag_txt[begin_ind:end_ind]
                             if 'Counselor' in job_str or 'Special Education' in job_str:
-                                contact_info[school][tag.find('u').text.strip(' ')]=[tag.find('a').text.strip(' '),'']
+                                contact_info[school][tag.find('u').text.strip(' ')]=[tag.find('a').text.strip(' ')]
                 elif school in ['Science Leadership Academy','Science Leadership Academy at Beeber (6-12)']:
                     p_tags = soup.find_all('p')
                     for tag in p_tags:
                         a_tag=tag.find('a',attrs={'href':re.compile('([A-Za-z])*@([A-Za-z0-9])*.org')})
                         tag_txt=tag.text
                         if a_tag and ('Counselor' in tag_txt or 'Special Education' in tag_txt) and 'LS' not in tag_txt:
-                            contact_info[school][a_tag.text]=[a_tag.get('href').strip('mailto:'),'']
+                            contact_info[school][a_tag.text]=[a_tag.get('href').strip('mailto:')]
                 elif school=='High School of the Future':
                     get_contacts_from_sprdsheet(soup,'3',['1','2'],'4',contact_info,school)
                 elif school=='Kensington Creative & Performing Arts High School':
@@ -279,10 +279,10 @@ def get_psd_contact_info():
                         for i in range(len(h2_tags)):
                             tag_txt = h2_tags[i].text
                             if 'Counselor' in tag_txt or 'SPED' in tag_txt or 'Special Education' in tag_txt:
-                                contact_info[school][h3_tags[i].text]=[div_tags[i].find('p').text,'']
+                                contact_info[school][h3_tags[i].text]=[div_tags[i].find('p').text]
                 elif school=='Parkway Northwest High School':
                     info_btn = soup.find('a',attrs={'class':'vc_general vc_btn3 vc_btn3-size-md vc_btn3-shape-rounded vc_btn3-style-modern vc_btn3-color-sandy-brown'})
-                    contact_info[school][info_btn.text[:info_btn.text.find('-')]]=[info_btn.get('href').strip('mailto:'),'']
+                    contact_info[school][info_btn.text[:info_btn.text.find('-')]]=[info_btn.get('href').strip('mailto:')]
                 elif school=='Jules E. Mastbaum Technical High School':
                     get_contacts_from_sprdsheet(soup,'2','3','4',contact_info,school)
                 elif school == 'John Bartram High School':
@@ -296,7 +296,7 @@ def get_psd_contact_info():
                         if not bool(re.match('^(Mrs?)|(Ms)|(Dr)\.. [A-Z].[a-z]* -',name)):
                             break
                         name = name[:name.find(' -')]
-                        contact_info[school][name]=[tags[i+1].find('em').text,'']
+                        contact_info[school][name]=[tags[i+1].find('em').text]
     return contact_info
                     
             

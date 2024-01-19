@@ -73,6 +73,12 @@ def get_contacts_from_ul_tags(soup,school,header_num,contact_info,title_included
         end_ind = colon_ind if colon_ind<comma_ind else comma_ind
         contact_info[school][header_txt[:end_ind]]=ul_tags[i].find('a').text
 
+def get_all_PA_hs_links():
+    req = requests.get('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania')
+    print(req.status_code)
+    soup = BeautifulSoup(req.text,'html.parser')
+    schools_html = soup.find_all(re.compile('span|div'),attrs={'class':re.compile('mw-headline|div-col')})
+
 def get_phil_sd_hs_links():
     """
     Creates list of Philadelphia school district high school links
@@ -301,7 +307,7 @@ def get_psd_contact_info(school_to_link):
                         contact_info[school][name]=tags[i+1].find('em').text
     return contact_info
 
-def write_to_csv(contact_info,school_distr,file_name):
+def write_to_excel_file(contact_info,school_distr,file_name):
     wb = openpyxl.Workbook()
     sheet = wb.active
     sheet.title = school_distr
@@ -318,5 +324,5 @@ def write_to_csv(contact_info,school_distr,file_name):
     wb.save(file_name)
             
 #print(get_psd_contact_info())
-#write_to_csv(get_psd_contact_info(get_phil_sd_hs_links()),'Philadelphia School District','counselor_contacts.xlsx')
-
+#write_to_excel_file(get_psd_contact_info(get_phil_sd_hs_links()),'Philadelphia School District','counselor_contacts.xlsx')
+get_all_PA_hs_links()

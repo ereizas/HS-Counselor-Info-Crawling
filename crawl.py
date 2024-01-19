@@ -75,9 +75,20 @@ def get_contacts_from_ul_tags(soup,school,header_num,contact_info,title_included
 
 def get_all_PA_hs_links():
     req = requests.get('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania')
-    print(req.status_code)
     soup = BeautifulSoup(req.text,'html.parser')
+    couns_contacts = dict()
     schools_html = soup.find_all(re.compile('span|div'),attrs={'class':re.compile('mw-headline|div-col')})
+    len_schools_html = len(schools_html)
+    i=0
+    while i<len_schools_html:
+        county = schools_html[i].text
+        if 'County' not in county:
+            break
+        print(county)
+        couns_contacts[county]=dict()
+        i+=1
+        while i<len_schools_html and (schools_html[i].name=='div' or (schools_html[i].name=='span' and schools_html[i].parent.name!='h2')):
+            i+=1
 
 def get_phil_sd_hs_links():
     """

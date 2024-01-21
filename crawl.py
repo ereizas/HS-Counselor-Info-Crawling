@@ -4,20 +4,18 @@ from googlesearch import search
 import re
 from openpyxl import load_workbook
 import openpyxl
+from random import randint
+from time import sleep
+from json import dump
 
-def google_search_school(query,qualifying_str):
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-    }
-    s=requests.Session()
-    req = s.get('https://www.google.com/search?q='+'+'.join(query.split())+'&num=5&ie=utf-8&oe=utf-8',headers=headers)
-    soup=BeautifulSoup(req.text,'html.parser')
-    for search_wrapper in soup.find_all('a'):
-        link = search_wrapper.get('href')
-        if search_wrapper and link and qualifying_str in link:
-            return link[:link.find('.org/')+6]
+def google_search(query):
+    links=search(query,stop=1)
+    for link in links:
+        req=requests.get(str(link))
+        if req.status_code==200:
+            return str(link)
     return None
-
+    
 def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,contact_info,school,name_rvrs_order=False):
     rows = soup.find_all('tr',attrs={'class':re.compile("row-([2-9]|[1-9]\d{1,}) ?(even|odd)?")})
     for row in rows:
@@ -73,67 +71,47 @@ def get_contacts_from_ul_tags(soup,school,header_num,contact_info,title_included
         end_ind = colon_ind if colon_ind<comma_ind else comma_ind
         contact_info[school][header_txt[:end_ind]]=ul_tags[i].find('a').text
 
-def get_all_PA_hs_links():
+def get_PA_hs_links(county_to_retrieve=None):
     req = requests.get('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania')
     soup = BeautifulSoup(req.text,'html.parser')
-    couns_contacts = dict()
+    hs_links = dict()
     schools_html = soup.find_all(re.compile('span|div'),attrs={'class':re.compile('mw-headline|div-col')})
     len_schools_html = len(schools_html)
     i=0
+    if county_to_retrieve:
+        while i<len_schools_html and (schools_html[i].name!='span' or county_to_retrieve not in schools_html[i].text):
+            i+=1
     while i<len_schools_html:
         county = schools_html[i].text
         if 'County' not in county:
             break
-        print(county)
-        couns_contacts[county]=dict()
+        hs_links[county]=dict()
         i+=1
+        #Added to query to ensure the correct school is retrieved
+        city = None
         while i<len_schools_html and (schools_html[i].name=='div' or (schools_html[i].name=='span' and schools_html[i].parent.name!='h2')):
+            if schools_html[i].name=='span' and schools_html[i].get('a'):
+                city = schools_html[i].text
+            elif schools_html[i].name=='div':
+                schools=schools_html[i].find_all('li')
+                for school in schools:
+                    print(school.text)
+                    query = school.text
+                    if city:
+                        query+=' ' + city
+                    else:
+                        query+=' ' +county
+                    goog_srch_res = google_search(query)
+                    print(f"Sleeping for 30 seconds")
+                    sleep(randint(30, 40))
+                    if goog_srch_res:
+                        hs_links[county][school.text]=goog_srch_res
             i+=1
-
-def get_phil_sd_hs_links():
-    """
-    Creates list of Philadelphia school district high school links
-    """
-    school_to_link = dict()
-    req = requests.get("https://en.wikipedia.org/wiki/List_of_schools_of_the_School_District_of_Philadelphia")
-    soup = BeautifulSoup(req.text,'html.parser')
-    link_sections = soup.find_all('div',attrs={'class':"div-col"})[3:6]
-    for sect in link_sections:
-        schools_html=sect.find_all('li')
-        for school in schools_html:
-            a_tag_portion = school.find('a')
-            school_wiki__domain_suff=None
-            if a_tag_portion:
-                school_wiki__domain_suff = a_tag_portion.get('href')
-                if school_wiki__domain_suff:
-                    school_wiki_req = requests.get("https://en.wikipedia.org"+school_wiki__domain_suff)
-                    soup=BeautifulSoup(school_wiki_req.text,'html.parser')
-                    links = soup.find_all('a')
-                    hs_link = ''
-                    #searches for school link in wikipedia page and then Google if not found
-                    for link in links:
-                        school_str = school.text
-                        up_to_ind = school_str.find('School')
-                        school_str_len = len(school_str)
-                        if up_to_ind+5!=school_str_len-1:
-                            up_to_ind=school_str_len
-                        potential_link = link.get('href')
-                        if potential_link and 'philasd.org' in potential_link and 'www.philasd.org' not in potential_link and 'https://philasd.org/' not in potential_link and any(item.lower() in potential_link for item in school_str[:up_to_ind].split()):
-                            hs_link=potential_link
-                            if hs_link[-1]!='/':
-                                hs_link+='/'
-                            school_to_link[school.text]=hs_link[:hs_link.find('.org/')+5]
-                            break
-                    if not hs_link:
-                        goog_srch_res = google_search_school(school.text,'philasd')
-                        if goog_srch_res:
-                            school_to_link[school.text]=goog_srch_res
-            else:
-                goog_srch_res = google_search_school(school.text,'philasd')
-                if goog_srch_res:
-                    school_to_link[school.text]=goog_srch_res
-    #print(len(school_to_link))
-    return school_to_link
+        if county_to_retrieve:
+            break
+    print(hs_links)
+    with open('hs_links.json','w') as file:
+        dump(hs_links,file)
 
 def get_psd_contact_info(school_to_link):
     contact_info = dict()
@@ -164,10 +142,7 @@ def get_psd_contact_info(school_to_link):
                 if test_req.status_code>=200 and test_req.status_code<300:
                     req=test_req
             if not req:
-                links=search(query='counselor site:'+school_to_link[school],stop=1)
-                for link in links:
-                    req=requests.get(str(link))
-                    break
+                link=search('counselor site:'+school_to_link[school])
             if req.status_code>=200 and req.status_code<300:
                 soup=BeautifulSoup(req.text,'html.parser')
                 if school in ['South Philadelphia High School', 'Murrell Dobbins Vocational School']:
@@ -336,4 +311,5 @@ def write_to_excel_file(contact_info,school_distr,file_name):
             
 #print(get_psd_contact_info())
 #write_to_excel_file(get_psd_contact_info(get_phil_sd_hs_links()),'Philadelphia School District','counselor_contacts.xlsx')
-get_all_PA_hs_links()
+#get_PA_hs_links('Montgomery County')
+#get_PA_hs_links()

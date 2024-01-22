@@ -104,10 +104,10 @@ def get_PA_hs_links(county_to_retrieve=None):
 def get_psd_contact_info():
     contact_info = dict()
     school_to_link=None
-    with open('philadelphia_school_links.json') as file:
+    '''with open('philadelphia_school_links.json') as file:
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
-    file.close()
+    file.close()'''
     for school in school_to_link:
         #Mastery Charter has several schools to account for programmatically with the same structure
         if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School', 'The LINC', 
@@ -120,14 +120,16 @@ def get_psd_contact_info():
                       'Parkway Northwest High School','Jules E. Mastbaum Technical High School']:
             contact_info[school]=dict()
             req = None
-            suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty',
+            if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School','Jules E. Mastbaum Technical High School']:
+                suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty',
                      'contact-us','staff-directory','about/staff','high-school-support-services/','apps/staff/','our-team','staff/hs-faculty/',
                      'our-families/support-services','families/staff-directory/','support','faculty-and-staff','about/facultystaffdirectory',
                      'who-we-are/meet-our-educators','discover/facultystaff','about/faculty']
-            if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School','Jules E. Mastbaum Technical High School']:
                 for suff in suffs:
                     test_req=requests.get(school_to_link[school]+suff)
+                    print(test_req.status_code)
                     if test_req.status_code>=200 and test_req.status_code<300:
+                        print(test_req.url)
                         req=test_req
                         break
             elif school!='Jules E. Mastbaum Technical High School':
@@ -140,6 +142,7 @@ def get_psd_contact_info():
                     req=test_req
             if not req:
                 link=google_search('counselor site:'+school_to_link[school])
+                print(link)
                 if link:
                     req=requests.get(link)
             if req and req.status_code>=200 and req.status_code<300:

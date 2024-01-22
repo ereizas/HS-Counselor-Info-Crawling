@@ -40,22 +40,6 @@ def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,conta
                             names[i]=names[i][:names[i].find('(')]
                     contact_info[school][names[i]]=emails[i]
 
-def get_contacts_from_li_tags(soup,contact_info,school,separator):
-    li_tags=soup.find_all('li',attrs={'class':None,'id':None})
-    for i in range(len(li_tags)):
-        strong_tag = li_tags[i].find('strong')
-        if strong_tag and 'Counselor' in strong_tag.text:
-            j=i+1
-            strong_tag = li_tags[j].find('strong')
-            while not strong_tag:
-                tag_txt=li_tags[j].text
-                separator_ind = tag_txt.find(separator)
-                name = tag_txt[:separator_ind-1]
-                contact_info[school][name]=tag_txt[separator_ind+1:-1]
-                j+=1
-                strong_tag = li_tags[j].find('strong')
-            break
-
 def get_contacts_from_ul_tags(soup,school,header_num,contact_info,title_included=False):
     ul_tags=soup.find_all('ul',attrs={'class':None,'id':None})[1:]
     regex = '^[A-Z].[a-z]* [A-Z].[a-z]*'
@@ -122,6 +106,7 @@ def get_psd_contact_info():
     school_to_link=None
     with open('philadelphia_school_links.json') as file:
         school_to_link=load(file)
+        school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
     file.close()
     for school in school_to_link:
         #Mastery Charter has several schools to account for programmatically with the same structure
@@ -135,7 +120,10 @@ def get_psd_contact_info():
                       'Parkway Northwest High School','Jules E. Mastbaum Technical High School']:
             contact_info[school]=dict()
             req = None
-            suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty','contact-us','staff-directory','about/staff','high-school-support-services/','apps/staff/','our-team','staff/hs-faculty/','our-families/support-services','families/staff-directory/','support','faculty-and-staff']
+            suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty',
+                     'contact-us','staff-directory','about/staff','high-school-support-services/','apps/staff/','our-team','staff/hs-faculty/',
+                     'our-families/support-services','families/staff-directory/','support','faculty-and-staff','about/facultystaffdirectory',
+                     'who-we-are/meet-our-educators','discover/facultystaff','about/faculty']
             if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School','Jules E. Mastbaum Technical High School']:
                 for suff in suffs:
                     test_req=requests.get(school_to_link[school]+suff)
@@ -154,7 +142,7 @@ def get_psd_contact_info():
                 link=google_search('counselor site:'+school_to_link[school])
                 if link:
                     req=requests.get(link)
-            if req.status_code>=200 and req.status_code<300:
+            if req and req.status_code>=200 and req.status_code<300:
                 soup=BeautifulSoup(req.text,'html.parser')
                 if school in ['South Philadelphia High School', 'Murrell Dobbins Vocational School']:
                     p_tags=soup.find_all('p')

@@ -20,6 +20,8 @@ def google_search(query):
     return None
     
 def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,contact_info,school,name_rvrs_order=False):
+    if school=='Shoemaker':
+        soup=soup.find('table',attrs={'id':'tablepress-263'})
     rows = soup.find_all('tr',attrs={'class':re.compile("row-([2-9]|[1-9]\d{1,}) ?(even|odd)?")})
     for row in rows:
         row_text = row.find('td',attrs={'class':'column-'+job_col}).text
@@ -38,6 +40,8 @@ def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,conta
                             names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
                         else:
                             names[i]=names[i][:names[i].find('(')]
+                    emails[i]=emails[i].replace('[dot]','.')
+                    emails[i]=emails[i].replace('[at]','@')
                     contact_info[school][names[i]]=emails[i]
 
 def get_contacts_from_ul_tags(soup,school,header_num,contact_info,title_included=False):
@@ -108,7 +112,7 @@ def get_psd_contact_info():
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
     file.close()'''
-    school_to_link={"Mariana Bracetti Academy Charter School": "https://www.mbacs.org/"}
+    school_to_link={"Mastery Charter Schools (Gratz, Lenfest, Pickett, Shoemaker, Thomas, Hardy Williams)": "https://masterycharter.org/secondary-schools/simon-gratz-high-school"}
     for school in school_to_link:
         #Mastery Charter has several schools to account for programmatically with the same structure
         if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School', 'The LINC', 
@@ -118,7 +122,7 @@ def get_psd_contact_info():
                       'Samuel Fels High School','George Washington High School','Science Leadership Academy','Kensington Health Sciences Academy High School',
                       'Philadelphia Military Academy', 'Murrell Dobbins Vocational School','High School of the Future', 
                       'Science Leadership Academy at Beeber (6-12)','Kensington Creative & Performing Arts High School','The Crefeld School',
-                      'Parkway Northwest High School','Jules E. Mastbaum Technical High School','Mariana Bracetti Academy Charter School']:
+                      'Parkway Northwest High School','Jules E. Mastbaum Technical High School','Mariana Bracetti Academy Charter School',]:
             contact_info[school]=dict()
             req = None
             if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School','Jules E. Mastbaum Technical High School','Mariana Bracetti Academy Charter School']:
@@ -305,7 +309,22 @@ def get_psd_contact_info():
                         if 'Special Ed' in tag_txt:
                             a_tag = tag.find('a')
                             contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:')
-
+        elif school=='Mastery Charter Schools (Gratz, Lenfest, Pickett, Shoemaker, Thomas, Hardy Williams)':
+            req=requests.get(school_to_link[school])
+            soup = BeautifulSoup(req.text,'html.parser')
+            a_tags=soup.find_all('a',string=re.compile('-12$'))
+            for tag in a_tags:
+                campus_name = ''
+                for char in tag.text:
+                    if not char.isnumeric():
+                        campus_name+=char
+                    else:
+                        campus_name=campus_name.strip(' ')
+                        break
+                contact_info[campus_name]=dict()
+                temp_req = requests.get(tag.get('href'))
+                soup = BeautifulSoup(temp_req.text,'html.parser')
+                get_contacts_from_sprdsheet(soup,'3',['1','2'],'4',contact_info,campus_name)
     return contact_info
 
 def write_to_excel_file(contact_info,school_distr,file_name):

@@ -108,6 +108,7 @@ def get_psd_contact_info():
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
     file.close()'''
+    school_to_link={"Mariana Bracetti Academy Charter School": "https://www.mbacs.org/"}
     for school in school_to_link:
         #Mastery Charter has several schools to account for programmatically with the same structure
         if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School', 'The LINC', 
@@ -117,27 +118,31 @@ def get_psd_contact_info():
                       'Samuel Fels High School','George Washington High School','Science Leadership Academy','Kensington Health Sciences Academy High School',
                       'Philadelphia Military Academy', 'Murrell Dobbins Vocational School','High School of the Future', 
                       'Science Leadership Academy at Beeber (6-12)','Kensington Creative & Performing Arts High School','The Crefeld School',
-                      'Parkway Northwest High School','Jules E. Mastbaum Technical High School']:
+                      'Parkway Northwest High School','Jules E. Mastbaum Technical High School','Mariana Bracetti Academy Charter School']:
             contact_info[school]=dict()
             req = None
-            if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School','Jules E. Mastbaum Technical High School']:
+            if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School','Jules E. Mastbaum Technical High School','Mariana Bracetti Academy Charter School']:
                 suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty',
                      'contact-us','staff-directory','about/staff','high-school-support-services/','apps/staff/','our-team','staff/hs-faculty/',
                      'our-families/support-services','families/staff-directory/','support','faculty-and-staff','about/facultystaffdirectory',
                      'who-we-are/meet-our-educators','discover/facultystaff','about/faculty']
                 for suff in suffs:
                     test_req=requests.get(school_to_link[school]+suff)
-                    print(test_req.status_code)
+                    #print(test_req.status_code)
                     if test_req.status_code>=200 and test_req.status_code<300:
                         print(test_req.url)
                         req=test_req
                         break
-            elif school!='Jules E. Mastbaum Technical High School':
+            elif school not in ['Jules E. Mastbaum Technical High School','Mariana Bracetti Academy Charter School']:
                 test_req=requests.get(school_to_link[school]+'staff')
                 if test_req.status_code>=200 and test_req.status_code<300:
                     req=test_req
-            else:
+            elif school!='Mariana Bracetti Academy Charter School':
                 test_req=requests.get(school_to_link[school]+'contact-us')
+                if test_req.status_code>=200 and test_req.status_code<300:
+                    req=test_req
+            else:
+                test_req=requests.get(school_to_link[school]+'our-team')
                 if test_req.status_code>=200 and test_req.status_code<300:
                     req=test_req
             if not req:
@@ -293,6 +298,14 @@ def get_psd_contact_info():
                             break
                         name = name[:name.find(' -')]
                         contact_info[school][name]=tags[i+1].find('em').text
+                elif school=='Mariana Bracetti Academy Charter School':
+                    div_tags = soup.find_all('div',attrs={'class':re.compile('__column$')})[2:]
+                    for tag in div_tags:
+                        tag_txt=tag.text
+                        if 'Special Ed' in tag_txt:
+                            a_tag = tag.find('a')
+                            contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:')
+
     return contact_info
 
 def write_to_excel_file(contact_info,school_distr,file_name):

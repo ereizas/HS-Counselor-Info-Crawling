@@ -112,7 +112,7 @@ def get_psd_contact_info():
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
     file.close()'''
-    school_to_link={"Mastery Charter Schools (Gratz, Lenfest, Pickett, Shoemaker, Thomas, Hardy Williams)": "https://masterycharter.org/secondary-schools/simon-gratz-high-school"}
+    school_to_link={"New Foundations Charter School": "https://www.newfoundations.org/"}
     for school in school_to_link:
         #Mastery Charter has several schools to account for programmatically with the same structure
         if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School', 'The LINC', 
@@ -122,11 +122,13 @@ def get_psd_contact_info():
                       'Samuel Fels High School','George Washington High School','Science Leadership Academy','Kensington Health Sciences Academy High School',
                       'Philadelphia Military Academy', 'Murrell Dobbins Vocational School','High School of the Future', 
                       'Science Leadership Academy at Beeber (6-12)','Kensington Creative & Performing Arts High School','The Crefeld School',
-                      'Parkway Northwest High School','Jules E. Mastbaum Technical High School','Mariana Bracetti Academy Charter School',]:
+                      'Parkway Northwest High School','Jules E. Mastbaum Technical High School','Mariana Bracetti Academy Charter School',
+                      'New Foundations Charter School']:
             contact_info[school]=dict()
             req = None
-            if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School','Jules E. Mastbaum Technical High School','Mariana Bracetti Academy Charter School']:
-                suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','staff','counseling','faculty',
+            if school not in ['Philadelphia Military Academy','Kensington Creative & Performing Arts High School',
+                              'Jules E. Mastbaum Technical High School','Mariana Bracetti Academy Charter School']:
+                suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','counseling','staff','faculty',
                      'contact-us','staff-directory','about/staff','high-school-support-services/','apps/staff/','our-team','staff/hs-faculty/',
                      'our-families/support-services','families/staff-directory/','support','faculty-and-staff','about/facultystaffdirectory',
                      'who-we-are/meet-our-educators','discover/facultystaff','about/faculty']
@@ -309,6 +311,12 @@ def get_psd_contact_info():
                         if 'Special Ed' in tag_txt:
                             a_tag = tag.find('a')
                             contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:')
+                elif school=='New Foundations Charter School':
+                    div_tags=soup.find_all('div',attrs={'class':'col-12 col-md-6 vw-team-item-wrap text-center'})
+                    for tag in div_tags:
+                        tag_txt=tag.text
+                        if 'Counselor' in tag_txt and 'Grade' not in tag_txt:
+                            contact_info[school][tag.find('h5').text]=tag.find('a').get('href').strip('mailto:')
         elif school=='Mastery Charter Schools (Gratz, Lenfest, Pickett, Shoemaker, Thomas, Hardy Williams)':
             req=requests.get(school_to_link[school])
             soup = BeautifulSoup(req.text,'html.parser')

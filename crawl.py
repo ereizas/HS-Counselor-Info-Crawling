@@ -126,7 +126,7 @@ def get_psd_contact_info():
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
     file.close()'''
-    school_to_link={"Philadelphia Performing Arts Charter School": "https://ppa.stringtheoryschools.org/"}
+    school_to_link={"Springside Chestnut Hill Academy": "https://www.sch.org/explore-grades/upper-school/"}
     for school in school_to_link:
         #Mastery Charter has several schools to account for programmatically with the same structure
         if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School', 'The LINC', 
@@ -135,7 +135,8 @@ def get_psd_contact_info():
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
                       'Samuel Fels High School','George Washington High School','Science Leadership Academy','Kensington Health Sciences Academy High School',
                       'Murrell Dobbins Vocational School','High School of the Future','Science Leadership Academy at Beeber (6-12)',
-                      'The Crefeld School','Parkway Northwest High School','New Foundations Charter School','Philadelphia Performing Arts Charter School']:
+                      'The Crefeld School','Parkway Northwest High School','New Foundations Charter School', 'Springside Chestnut Hill Academy',
+                      'Philadelphia Performing Arts Charter School']:
             contact_info[school]=dict()
             req = None
             suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','counseling','staff','faculty',
@@ -303,6 +304,15 @@ def get_psd_contact_info():
                             strong_txt = tag.find('strong').text
                             lines = tag_txt.split('\n')
                             contact_info[school][strong_txt[:strong_txt.find('\n')].replace('\xa0',' ')]=lines[-1]
+                elif school=='Springside Chestnut Hill Academy':
+                    h3_tags=soup.find_all('h3')
+                    a_tags=soup.find_all('a',string=re.compile('([A-Za-z])*@([A-Za-z0-9])*.org'))
+                    i = 0
+                    while i < len(h3_tags):
+                        h3_txt = h3_tags[i].text
+                        if 'Upper School' in h3_txt:
+                            contact_info[school][h3_txt[:h3_txt.find(',')]]=a_tags[i].text
+                        i+=1
         elif school=='Mastery Charter Schools (Gratz, Lenfest, Pickett, Shoemaker, Thomas, Hardy Williams)':
             req=requests.get(school_to_link[school])
             soup = BeautifulSoup(req.text,'html.parser')

@@ -105,6 +105,20 @@ def get_PA_hs_links(county_to_retrieve=None):
         dump(hs_links,file)
     file.close()
 
+def is_hs_staff(txt):
+    grade_ind = txt.find('Grade')
+    if grade_ind==-1:
+        return True
+    i=grade_ind+len('Grade ')+1
+    grade = ''
+    while txt[i]!='-':
+        grade+=txt[i]
+        i+=1
+    if grade=='K':
+        return False
+    grade = int(grade)
+    return grade>8
+
 def get_psd_contact_info():
     contact_info = dict()
     school_to_link=None
@@ -112,7 +126,7 @@ def get_psd_contact_info():
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
     file.close()'''
-    school_to_link={"Philadelphia Academy Charter School": "https://www.philadelphiaacademy.org/"}
+    school_to_link={"Philadelphia Performing Arts Charter School": "https://ppa.stringtheoryschools.org/"}
     for school in school_to_link:
         #Mastery Charter has several schools to account for programmatically with the same structure
         if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School', 'The LINC', 
@@ -120,10 +134,8 @@ def get_psd_contact_info():
                       'Roxborough High School','Bodine International Affairs','Randolph Technical High School','CAPA','Central High School',
                       'Hill-Freedman World Academy High School','John Bartram High School','Swenson Arts and Technology High School',
                       'Samuel Fels High School','George Washington High School','Science Leadership Academy','Kensington Health Sciences Academy High School',
-                      'Murrell Dobbins Vocational School','High School of the Future', 
-                      'Science Leadership Academy at Beeber (6-12)','The Crefeld School',
-                      'Parkway Northwest High School',
-                      'New Foundations Charter School','Philadelphia Academy Charter School']:
+                      'Murrell Dobbins Vocational School','High School of the Future','Science Leadership Academy at Beeber (6-12)',
+                      'The Crefeld School','Parkway Northwest High School','New Foundations Charter School','Philadelphia Performing Arts Charter School']:
             contact_info[school]=dict()
             req = None
             suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','counseling','staff','faculty',
@@ -282,6 +294,15 @@ def get_psd_contact_info():
                         tag_txt=tag.text
                         if 'Counselor' in tag_txt and 'Grade' not in tag_txt:
                             contact_info[school][tag.find('h5').text]=tag.find('a').get('href').strip('mailto:')
+                elif school=='Philadelphia Performing Arts Charter School':
+                    p_tags = soup.find_all('p')
+                    for tag in p_tags:
+                        tag_txt=tag.text
+                        #manual function to check for grade
+                        if is_hs_staff(tag_txt) and ('Counselor' in tag_txt or 'Special Ed' in tag_txt):
+                            strong_txt = tag.find('strong').text
+                            lines = tag_txt.split('\n')
+                            contact_info[school][strong_txt[:strong_txt.find('\n')].replace('\xa0',' ')]=lines[-1]
         elif school=='Mastery Charter Schools (Gratz, Lenfest, Pickett, Shoemaker, Thomas, Hardy Williams)':
             req=requests.get(school_to_link[school])
             soup = BeautifulSoup(req.text,'html.parser')
@@ -328,7 +349,7 @@ def get_psd_contact_info():
                 tag_txt=tag.text
                 if 'Special Ed' in tag_txt:
                     a_tag = tag.find('a')
-                    contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:')  
+                    contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:') 
     return contact_info
 
 def write_to_excel_file(contact_info,school_distr,file_name):
@@ -345,8 +366,8 @@ def write_to_excel_file(contact_info,school_distr,file_name):
             sheet.cell(row=i,column=2).value=couns
             sheet.cell(row=i,column=3).value=contact_info[school][couns]
             i+=1
-    wb.save(file_name)
-            
+    wb.save(file_name)    
+
 print(get_psd_contact_info())
 #write_to_excel_file(get_psd_contact_info(),'Philadelphia School District','counselor_contacts.xlsx')
 #get_PA_hs_links('Montgomery County')

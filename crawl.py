@@ -134,7 +134,7 @@ def get_psd_contact_info():
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
     file.close()'''
-    school_to_link={"Father Judge High School": "https://www.fatherjudge.com/"}
+    school_to_link={"St. Hubert Catholic High School for Girls": "https://www.huberts.org/"}
     for school in school_to_link:
         #Mastery Charter has several schools to account for programmatically with the same structure
         if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School', 'The LINC', 
@@ -144,7 +144,8 @@ def get_psd_contact_info():
                       'Samuel Fels High School','George Washington High School','Science Leadership Academy','Kensington Health Sciences Academy High School',
                       'Murrell Dobbins Vocational School','High School of the Future','Science Leadership Academy at Beeber (6-12)',
                       'The Crefeld School','Parkway Northwest High School','New Foundations Charter School', 'Springside Chestnut Hill Academy',
-                      'Philadelphia Performing Arts Charter School','Archbishop Ryan High School','Father Judge High School']:
+                      'Philadelphia Performing Arts Charter School','Archbishop Ryan High School','Father Judge High School',
+                      'St. Hubert Catholic High School for Girls']:
             contact_info[school]=dict()
             req = None
             suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','counseling','staff','faculty',
@@ -325,7 +326,8 @@ def get_psd_contact_info():
                     get_contacts_from_name_pos_class_div_tags(soup,contact_info,school)
                 elif school=='Father Judge High School':
                     get_contacts_from_name_pos_class_div_tags(soup,contact_info,school)
-                    
+                elif school=='St. Hubert Catholic High School for Girls':
+                    get_contacts_from_name_pos_class_div_tags(soup,contact_info,school)
         elif school=='Mastery Charter Schools (Gratz, Lenfest, Pickett, Shoemaker, Thomas, Hardy Williams)':
             req=requests.get(school_to_link[school])
             soup = BeautifulSoup(req.text,'html.parser')
@@ -372,7 +374,7 @@ def get_psd_contact_info():
                 tag_txt=tag.text
                 if 'Special Ed' in tag_txt:
                     a_tag = tag.find('a')
-                    contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:') 
+                    contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:')
     return contact_info
 
 def write_to_excel_file(contact_info,school_distr,file_name):

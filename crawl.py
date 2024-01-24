@@ -126,7 +126,7 @@ def get_psd_contact_info():
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
     file.close()'''
-    school_to_link={"Springside Chestnut Hill Academy": "https://www.sch.org/explore-grades/upper-school/"}
+    school_to_link={"Archbishop Ryan High School": "https://www.archbishopryan.com/"}
     for school in school_to_link:
         #Mastery Charter has several schools to account for programmatically with the same structure
         if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School', 'The LINC', 
@@ -136,7 +136,7 @@ def get_psd_contact_info():
                       'Samuel Fels High School','George Washington High School','Science Leadership Academy','Kensington Health Sciences Academy High School',
                       'Murrell Dobbins Vocational School','High School of the Future','Science Leadership Academy at Beeber (6-12)',
                       'The Crefeld School','Parkway Northwest High School','New Foundations Charter School', 'Springside Chestnut Hill Academy',
-                      'Philadelphia Performing Arts Charter School']:
+                      'Philadelphia Performing Arts Charter School','Archbishop Ryan High School']:
             contact_info[school]=dict()
             req = None
             suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','counseling','staff','faculty',
@@ -313,6 +313,13 @@ def get_psd_contact_info():
                         if 'Upper School' in h3_txt:
                             contact_info[school][h3_txt[:h3_txt.find(',')]]=a_tags[i].text
                         i+=1
+                elif school=='Archbishop Ryan High School':
+                    div_tags=soup.find_all('div',attrs={'class':re.compile('name-position|email-phone')})
+                    num_tags = len(div_tags)
+                    for i in range(0,num_tags,2):
+                        name_txt = div_tags[i].text
+                        if 'Counselor' in name_txt:
+                            contact_info[school][div_tags[i].find('a').text.replace('.\n\t','. ').replace('\n','').replace('\t','')]=div_tags[i+1].find('a').text
         elif school=='Mastery Charter Schools (Gratz, Lenfest, Pickett, Shoemaker, Thomas, Hardy Williams)':
             req=requests.get(school_to_link[school])
             soup = BeautifulSoup(req.text,'html.parser')

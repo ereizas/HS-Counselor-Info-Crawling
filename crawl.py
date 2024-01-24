@@ -62,6 +62,14 @@ def get_contacts_from_ul_tags(soup,school,header_num,contact_info,title_included
         end_ind = colon_ind if colon_ind<comma_ind else comma_ind
         contact_info[school][header_txt[:end_ind]]=ul_tags[i].find('a').text
 
+def get_contacts_from_name_pos_class_div_tags(soup,contact_info,school):
+    div_tags=soup.find_all('div',attrs={'class':re.compile('name-position|email-phone')})
+    num_tags = len(div_tags)
+    for i in range(0,num_tags,2):
+        name_txt = div_tags[i].text
+        if 'Counselor' in name_txt:
+            contact_info[school][div_tags[i].find('a').text.replace('.\n\t','. ').replace('\n','').replace('\t','')]=div_tags[i+1].find('a').text
+
 def get_PA_hs_links(county_to_retrieve=None):
     req = requests.get('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania')
     soup = BeautifulSoup(req.text,'html.parser')
@@ -126,7 +134,7 @@ def get_psd_contact_info():
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
     file.close()'''
-    school_to_link={"Archbishop Ryan High School": "https://www.archbishopryan.com/"}
+    school_to_link={"Father Judge High School": "https://www.fatherjudge.com/"}
     for school in school_to_link:
         #Mastery Charter has several schools to account for programmatically with the same structure
         if school in ['South Philadelphia High School','GAMP','Thomas A. Edison High School','Kensington High School', 'The LINC', 
@@ -136,7 +144,7 @@ def get_psd_contact_info():
                       'Samuel Fels High School','George Washington High School','Science Leadership Academy','Kensington Health Sciences Academy High School',
                       'Murrell Dobbins Vocational School','High School of the Future','Science Leadership Academy at Beeber (6-12)',
                       'The Crefeld School','Parkway Northwest High School','New Foundations Charter School', 'Springside Chestnut Hill Academy',
-                      'Philadelphia Performing Arts Charter School','Archbishop Ryan High School']:
+                      'Philadelphia Performing Arts Charter School','Archbishop Ryan High School','Father Judge High School']:
             contact_info[school]=dict()
             req = None
             suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','counseling','staff','faculty',
@@ -314,12 +322,10 @@ def get_psd_contact_info():
                             contact_info[school][h3_txt[:h3_txt.find(',')]]=a_tags[i].text
                         i+=1
                 elif school=='Archbishop Ryan High School':
-                    div_tags=soup.find_all('div',attrs={'class':re.compile('name-position|email-phone')})
-                    num_tags = len(div_tags)
-                    for i in range(0,num_tags,2):
-                        name_txt = div_tags[i].text
-                        if 'Counselor' in name_txt:
-                            contact_info[school][div_tags[i].find('a').text.replace('.\n\t','. ').replace('\n','').replace('\t','')]=div_tags[i+1].find('a').text
+                    get_contacts_from_name_pos_class_div_tags(soup,contact_info,school)
+                elif school=='Father Judge High School':
+                    get_contacts_from_name_pos_class_div_tags(soup,contact_info,school)
+                    
         elif school=='Mastery Charter Schools (Gratz, Lenfest, Pickett, Shoemaker, Thomas, Hardy Williams)':
             req=requests.get(school_to_link[school])
             soup = BeautifulSoup(req.text,'html.parser')

@@ -135,8 +135,8 @@ def is_hs_staff(txt):
     grade = int(grade)
     return grade>8
 
-def get_soup(school,school_to_link,suff):
-    req=requests.get(school_to_link[school]+suff)
+def get_soup(url,suff):
+    req=requests.get(url+suff)
     return BeautifulSoup(req.text,'html.parser')
 
 def print_couns_page_url(school_to_link,school):
@@ -170,15 +170,15 @@ def get_psd_contact_info():
     for school in school_to_link:
         contact_info[school]=dict()
         if school == 'John Bartram High School':
-            soup=get_soup(school,school_to_link,'counselors-corner')
+            soup=get_soup(school_to_link[school],'counselors-corner')
             get_contacts_from_ul_tags(soup,school,'3',contact_info,True)
         elif school=='Thomas A. Edison High School':
-            soup=get_soup(school,school_to_link,'counselors-corner')
+            soup=get_soup(school_to_link[school],'counselors-corner')
             rows = soup.find_all('tr',attrs={'class':re.compile("row-[2-9] (even|odd)")})
             for row in rows:
                 contact_info[school][row.find('td',attrs={'class':'column-1'}).text]=row.find('td',attrs={'class':'column-4'}).text
         elif school=='Samuel Fels High School':
-            soup=get_soup(school,school_to_link,'counselors-and-social-work')
+            soup=get_soup(school_to_link[school],'counselors-and-social-work')
             tags=soup.find_all(re.compile('(^p$)|(^h3$)'))
             for i in range(1,len(tags),2):
                 name = tags[i].text
@@ -187,16 +187,16 @@ def get_psd_contact_info():
                 name = name[:name.find(' -')]
                 contact_info[school][name]=tags[i+1].find('em').text
         elif school=='Benjamin Franklin High School':
-            soup=get_soup(school,school_to_link,'counselors')
+            soup=get_soup(school_to_link[school],'counselors')
             strong_tags=soup.find_all('strong')[2:]
             for tag in strong_tags:
                 tag_txt=tag.text
                 contact_info[school][tag_txt[:tag_txt.find('–')-1]]=tag_txt[tag_txt.find('–')+2:]
         elif school=='Kensington High School':
-            soup=get_soup(school,school_to_link,'faculty-staff')
+            soup=get_soup(school_to_link[school],'faculty-staff')
             get_contacts_from_sprdsheet(soup,'4',['1'],'5',contact_info,school,True)
         elif school=='Northeast High School':
-            soup=get_soup(school,school_to_link,'counseling')
+            soup=get_soup(school_to_link[school],'counseling')
             #first two rows initialize the style
             span_tags = soup.find_all('span',attrs={'style':re.compile('font-weight: (\d)*')})
             contact_info[school][span_tags[8].text]=span_tags[11].text
@@ -205,20 +205,20 @@ def get_psd_contact_info():
             for i in range(11,len(td_tags),5):
                 contact_info[school][td_tags[i].text.strip('\xa0')]=td_tags[i+3].text.strip('\xa0')
         elif school=='Penn Treaty School (6-12)':
-            soup=get_soup(school,school_to_link,'who-we-are')
+            soup=get_soup(school_to_link[school],'who-we-are')
             get_contacts_from_sprdsheet(soup,'1',['2'],'3',contact_info,school)
         elif school=='Constitution High School':
-            soup=get_soup(school,school_to_link,'staff')
+            soup=get_soup(school_to_link[school],'staff')
             get_contacts_from_sprdsheet(soup,'1',['2'],'3',contact_info,school)
         elif school=='Roxborough High School':
-            soup=get_soup(school,school_to_link,'support-team')
+            soup=get_soup(school_to_link[school],'support-team')
             h3_tags = soup.find_all('h3')
             num_tags=len(h3_tags)
             for i in range(0,num_tags,2):
                 if i+1<num_tags:
                     contact_info[school][h3_tags[i].text]=h3_tags[i+1].text
         if school=='South Philadelphia High School':
-            soup=get_soup(school,school_to_link,'counselor')
+            soup=get_soup(school_to_link[school],'counselor')
             p_tags=soup.find_all('p')
             i = 0
             num_p_tags=len(p_tags)
@@ -235,7 +235,7 @@ def get_psd_contact_info():
                         contact_info[school][name]=tag_txt[tag_txt.find(':')+2:]
                 i+=1
         elif school=='George Washington High School':
-            soup=get_soup(school,school_to_link,'support-team')
+            soup=get_soup(school_to_link[school],'support-team')
             p_tags=soup.find_all('p',attrs={'style':'text-align: center'})
             for i in range(1,len(p_tags)):
                 tag_txt=p_tags[i].text
@@ -244,14 +244,14 @@ def get_psd_contact_info():
                     if  a_tag:
                         contact_info[school][tag_txt[:tag_txt.find('\n')]]=a_tag.text.strip('\xa0')
         elif school=='Bodine International Affairs':
-            soup=get_soup(school,school_to_link,'faculty-staff')
+            soup=get_soup(school_to_link[school],'faculty-staff')
             li_tags=soup.find_all('li',attrs={'class':None,'id':None})
             for tag in li_tags:
                 tag_txt=tag.text
                 if 'Counselor' in tag_txt or 'Special Ed' in tag_txt:
                     contact_info[school][tag_txt[:tag_txt.find(',')]]=tag_txt[tag_txt.rfind(',')+2:]
         elif school=='CAPA':
-            soup=get_soup(school,school_to_link,'counselor-page')
+            soup=get_soup(school_to_link[school],'counselor-page')
             a_tags = soup.find_all('a',attrs={'href':re.compile('([A-Za-z])@philasd.org')})
             for tag in a_tags:
                 tag_txt=tag.text
@@ -260,14 +260,14 @@ def get_psd_contact_info():
                 name = name[0]+name[1:dot_ind+2].lower()+name[dot_ind+2]+name[dot_ind+3:].lower()
                 contact_info[school][name]=tag.get('href')
         elif school=='Central High School':
-            soup=get_soup(school,school_to_link,'parents-2/counselors/')
+            soup=get_soup(school_to_link[school],'parents-2/counselors/')
             td_tags=soup.find_all('td',attrs={'style':'text-align: center'})
             for i in range(3,len(td_tags),2):
                 tag_txt=td_tags[i].text
                 #' x' should be a valid cutoff for the name assuming names start with a capital letter (i.e. Xavier)
                 contact_info[school][tag_txt[:tag_txt.find(' x')]]=tag_txt[tag_txt.find('/')+2:]
         elif school == 'GAMP':
-            soup=get_soup(school,school_to_link,'counselors-corner')
+            soup=get_soup(school_to_link[school],'counselors-corner')
             p_tags=soup.find_all('p')
             for tag in p_tags:
                 tag_txt = tag.text
@@ -275,10 +275,10 @@ def get_psd_contact_info():
                     #long dash is used not short dash
                     contact_info[school][tag_txt[4:tag_txt.find('–')-1]]=tag_txt[tag_txt.find('–')+2:]
         elif school in ['Hill-Freedman World Academy High School','The LINC']:
-            soup=get_soup(school,school_to_link,'parents/faculty-staff')
+            soup=get_soup(school_to_link[school],'parents/faculty-staff')
             get_contacts_from_sprdsheet(soup,'2','1','3',contact_info,school)
         elif school=='Kensington Health Sciences Academy High School':
-            soup=get_soup(school,school_to_link,'counseling')
+            soup=get_soup(school_to_link[school],'counseling')
             tags = soup.find_all(re.compile('th|td'),attrs={'class':re.compile('column-\d|^$')})
             for tag in tags:
                 tag_txt = tag.text
@@ -289,17 +289,17 @@ def get_psd_contact_info():
                     if 'Counselor' in job_str or 'Special Ed' in job_str:
                         contact_info[school][tag.find('u').text.strip(' ')]=tag.find('a').text.strip(' ')
         elif school=='Parkway Northwest High School':
-            soup=get_soup(school,school_to_link,'counselor-corner')
+            soup=get_soup(school_to_link[school],'counselor-corner')
             info_btn = soup.find('a',attrs={'class':'vc_general vc_btn3 vc_btn3-size-md vc_btn3-shape-rounded vc_btn3-style-modern vc_btn3-color-sandy-brown'})
             contact_info[school][info_btn.text[:info_btn.text.find('-')]]=info_btn.get('href').strip('mailto:')
         elif school in 'Science Leadership Academy':
-            soup=get_soup(school,school_to_link,'faculty')
+            soup=get_soup(school_to_link[school],'faculty')
             get_contacts_from_p_tags(soup,contact_info,school)
         elif school in ['Science Leadership Academy at Beeber (6-12)','The Crefeld School']:
-            soup=get_soup(school,school_to_link,'faculty-and-staff')
+            soup=get_soup(school_to_link[school],'faculty-and-staff')
             get_contacts_from_p_tags(soup,contact_info,school)
         elif school=='Murrell Dobbins Vocational School':
-            soup=get_soup(school,school_to_link,'about-us/staff-list')
+            soup=get_soup(school_to_link[school],'about-us/staff-list')
             p_tags=soup.find_all('p')
             i = 0
             num_p_tags=len(p_tags)
@@ -315,10 +315,10 @@ def get_psd_contact_info():
                         contact_info[school][name]=p_tags[i].find('a').text
                 i+=1
         elif school=='Philadelphia Military Academy':
-            soup=get_soup(school,school_to_link,'staff')
+            soup=get_soup(school_to_link[school],'staff')
             get_contacts_from_sprdsheet(soup,'2','1','3',contact_info,school)
         elif school=='Kensington Creative & Performing Arts High School':
-            soup=get_soup(school,school_to_link,'staff')
+            soup=get_soup(school_to_link[school],'staff')
             a_tags=soup.find_all('a',attrs={'data-vc-container':'.vc_tta','data-vc-tabs':''})
             panels = soup.find_all('div',attrs={'class':'vc_tta-panel-body'})
             panels = [panels[i] for i in range(len(a_tags)) if 'Support' in a_tags[i].find('span').text]
@@ -331,13 +331,13 @@ def get_psd_contact_info():
                     if 'Counselor' in tag_txt or 'SPED' in tag_txt or 'Special Ed' in tag_txt:
                         contact_info[school][h3_tags[i].text]=div_tags[i].find('p').text
         elif school=='Jules E. Mastbaum Technical High School':
-            soup=get_soup(school,school_to_link,'contact-us')
+            soup=get_soup(school_to_link[school],'contact-us')
             get_contacts_from_sprdsheet(soup,'2','3','4',contact_info,school)
         elif school=='High School of the Future':
-            soup=get_soup(school,school_to_link,'staff')
+            soup=get_soup(school_to_link[school],'staff')
             get_contacts_from_sprdsheet(soup,'3',['1','2'],'4',contact_info,school)
         elif school=='Randolph Technical High School':
-            soup=get_soup(school,school_to_link,'about-us/staff')
+            soup=get_soup(school_to_link[school],'about-us/staff')
             li_tags=soup.find_all('li',attrs={'class':None,'id':None})
             for i in range(len(li_tags)):
                 strong_tag = li_tags[i].find('strong')
@@ -352,17 +352,17 @@ def get_psd_contact_info():
                         strong_tag = li_tags[j].find('strong')
                     break
         if school=='Swenson Arts and Technology High School':
-            soup=get_soup(school,school_to_link,'counselors-corner')
+            soup=get_soup(school_to_link[school],'counselors-corner')
             get_contacts_from_ul_tags(soup,school,'4',contact_info)
         elif school=='New Foundations Charter School':
-            soup=get_soup(school,school_to_link,'counseling')
+            soup=get_soup(school_to_link[school],'counseling')
             div_tags=soup.find_all('div',attrs={'class':'col-12 col-md-6 vw-team-item-wrap text-center'})
             for tag in div_tags:
                 tag_txt=tag.text
                 if 'Counselor' in tag_txt and 'Grade' not in tag_txt:
                     contact_info[school][tag.find('h5').text]=tag.find('a').get('href').strip('mailto:')
         elif school=='Philadelphia Performing Arts Charter School':
-            soup=get_soup(school,school_to_link,'our-families/support-services')
+            soup=get_soup(school_to_link[school],'our-families/support-services')
             p_tags = soup.find_all('p')
             for tag in p_tags:
                 tag_txt=tag.text
@@ -372,7 +372,7 @@ def get_psd_contact_info():
                     lines = tag_txt.split('\n')
                     contact_info[school][strong_txt[:strong_txt.find('\n')].replace('\xa0',' ')]=lines[-1]
         elif school=='Springside Chestnut Hill Academy':
-            soup=get_soup(school,school_to_link,'support')
+            soup=get_soup(school_to_link[school],'support')
             h3_tags=soup.find_all('h3')
             a_tags=soup.find_all('a',string=re.compile('([A-Za-z])*@([A-Za-z0-9])*.org'))
             i = 0
@@ -382,13 +382,13 @@ def get_psd_contact_info():
                     contact_info[school][h3_txt[:h3_txt.find(',')]]=a_tags[i].text
                 i+=1
         elif school=='Archbishop Ryan High School':
-            soup=get_soup(school,school_to_link,'apps/staff/')
+            soup=get_soup(school_to_link[school],'apps/staff/')
             get_contacts_from_name_pos_class_div_tags(soup,contact_info,school)
         elif school=='Father Judge High School':
-            soup=get_soup(school,school_to_link,'apps/staff/')
+            soup=get_soup(school_to_link[school],'apps/staff/')
             get_contacts_from_name_pos_class_div_tags(soup,contact_info,school)
         elif school=='St. Hubert Catholic High School for Girls':
-            soup=get_soup(school,school_to_link,'apps/staff/')
+            soup=get_soup(school_to_link[school],'apps/staff/')
             get_contacts_from_name_pos_class_div_tags(soup,contact_info,school)
         elif school=='Mastery Charter Schools (Gratz, Lenfest, Pickett, Shoemaker, Thomas, Hardy Williams)':
             #Mastery Charter has several schools to account for programmatically with the same structure
@@ -408,13 +408,15 @@ def get_psd_contact_info():
                 soup = BeautifulSoup(temp_req.text,'html.parser')
                 get_contacts_from_sprdsheet(soup,'3',['1','2'],'4',contact_info,campus_name)
         elif school=='Mariana Bracetti Academy Charter School':
-            soup=get_soup(school,school_to_link,'our-team')
+            soup=get_soup(school_to_link[school],'our-team')
             div_tags = soup.find_all('div',attrs={'class':re.compile('__column$')})[2:]
             for tag in div_tags:
                 tag_txt=tag.text
                 if 'Special Ed' in tag_txt:
                     a_tag = tag.find('a')
                     contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:')
+
+
     return contact_info
 
 def write_to_excel_file(contact_info,school_distr,file_name):

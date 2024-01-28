@@ -24,25 +24,27 @@ def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,conta
         soup=soup.find('table',attrs={'id':'tablepress-263'})
     rows = soup.find_all('tr',attrs={'class':re.compile("row-([2-9]|[1-9]\d{1,}) ?(even|odd)?")})
     for row in rows:
-        row_text = row.find('td',attrs={'class':'column-'+job_col}).text
-        if ('Counsel' in row_text or 'SPED' in row_text or 'Special Ed' in row_text or 'Autis' in row_text) and 'MS' not in row_text and 'Bilingual' not in row_text:
-            names = row.find('td',attrs={'class':'column-'+name_cols[0]}).text.split('\n')
-            for i in range(1,len(name_cols)):
-                new_names = row.find('td',attrs={'class':'column-'+name_cols[i]}).text.split('\n')
-                for j in range(len(names)):
-                    names[j]+=' '+new_names[j]
-            emails = row.find('td',attrs={'class':'column-'+email_col}).text.split('\n')
-            i = 0
-            for i in range(len(names)):
-                if emails[i]:
-                    if name_rvrs_order:
-                        if '(' not in names[i]:
-                            names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
-                        else:
-                            names[i]=names[i][:names[i].find('(')]
-                    emails[i]=emails[i].replace('[dot]','.')
-                    emails[i]=emails[i].replace('[at]','@')
-                    contact_info[school][names[i]]=emails[i]
+        td_tag = row.find('td',attrs={'class':'column-'+job_col})
+        if td_tag:
+            row_text=td_tag.text
+            if ('Counsel' in row_text or 'SPED' in row_text or 'Special Ed' in row_text or 'Autis' in row_text) and 'MS' not in row_text and 'Bilingual' not in row_text:
+                names = row.find('td',attrs={'class':'column-'+name_cols[0]}).text.split('\n')
+                for i in range(1,len(name_cols)):
+                    new_names = row.find('td',attrs={'class':'column-'+name_cols[i]}).text.split('\n')
+                    for j in range(len(names)):
+                        names[j]+=' '+new_names[j]
+                emails = row.find('td',attrs={'class':'column-'+email_col}).text.split('\n')
+                i = 0
+                for i in range(len(names)):
+                    if emails[i]:
+                        if name_rvrs_order:
+                            if '(' not in names[i]:
+                                names[i]=names[i][names[i].find(',')+2:]+' '+names[i][:names[i].find(',')]
+                            else:
+                                names[i]=names[i][:names[i].find('(')]
+                        emails[i]=emails[i].replace('[dot]','.')
+                        emails[i]=emails[i].replace('[at]','@')
+                        contact_info[school][names[i]]=emails[i]
 
 def get_contacts_from_ul_tags(soup,school,header_num,contact_info,title_included=False):
     ul_tags=soup.find_all('ul',attrs={'class':None,'id':None})[1:]
@@ -163,11 +165,10 @@ def print_couns_page_url(school_to_link,school):
 def get_psd_contact_info():
     contact_info = dict()
     school_to_link=None
-    '''with open('philadelphia_school_links.json') as file:
+    with open('philadelphia_school_links.json') as file:
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
-    file.close()'''
-    school_to_link = {"Freire Charter School": "https://freirecharterschool.org/families/fchs/"}
+    file.close()
     for school in school_to_link:
         contact_info[school]=dict()
         if school == 'John Bartram High School':
@@ -404,7 +405,8 @@ def get_psd_contact_info():
                     else:
                         campus_name=campus_name.strip(' ')
                         break
-                contact_info[campus_name + ' Mastery Charter School Campus']=dict()
+                campus_name+=' Mastery Charter School Campus'
+                contact_info[campus_name]=dict()
                 temp_req = requests.get(tag.get('href'))
                 soup = BeautifulSoup(temp_req.text,'html.parser')
                 get_contacts_from_sprdsheet(soup,'3',['1','2'],'4',contact_info,campus_name)
@@ -442,7 +444,7 @@ def write_to_excel_file(contact_info,school_distr,file_name):
             i+=1
     wb.save(file_name)    
 
-print(get_psd_contact_info())
-#write_to_excel_file(get_psd_contact_info(),'Philadelphia School District','counselor_contacts.xlsx')
+#print(get_psd_contact_info())
+write_to_excel_file(get_psd_contact_info(),'Philadelphia School District','counselor_contacts.xlsx')
 #get_PA_hs_links('Montgomery County')
 #get_PA_hs_links()

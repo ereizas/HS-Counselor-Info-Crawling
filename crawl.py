@@ -163,10 +163,11 @@ def print_couns_page_url(school_to_link,school):
 def get_psd_contact_info():
     contact_info = dict()
     school_to_link=None
-    with open('philadelphia_school_links.json') as file:
+    '''with open('philadelphia_school_links.json') as file:
         school_to_link=load(file)
         school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
-    file.close()
+    file.close()'''
+    school_to_link = {"Freire Charter School": "https://freirecharterschool.org/families/fchs/"}
     for school in school_to_link:
         contact_info[school]=dict()
         if school == 'John Bartram High School':
@@ -403,7 +404,7 @@ def get_psd_contact_info():
                     else:
                         campus_name=campus_name.strip(' ')
                         break
-                contact_info[campus_name]=dict()
+                contact_info[campus_name + ' Mastery Charter School Campus']=dict()
                 temp_req = requests.get(tag.get('href'))
                 soup = BeautifulSoup(temp_req.text,'html.parser')
                 get_contacts_from_sprdsheet(soup,'3',['1','2'],'4',contact_info,campus_name)
@@ -415,7 +416,13 @@ def get_psd_contact_info():
                 if 'Special Ed' in tag_txt:
                     a_tag = tag.find('a')
                     contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:')
-
+        elif school=='Freire Charter School':
+            soup=get_soup(school_to_link[school],'staff-directory/')
+            div_tags=soup.find_all('div',attrs={'class':'wp-block-genesis-blocks-gb-column gb-block-layout-column gb-is-vertically-aligned-center'})
+            for tag in div_tags:
+                job_txt = tag.find('p',attrs={'class':None}).text
+                if 'Support Service' in job_txt or 'Psychologist' in job_txt:
+                    contact_info[school][tag.find('p').text]=tag.find('a').text
 
     return contact_info
 

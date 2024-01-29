@@ -52,7 +52,7 @@ def get_PA_hs_links(county_to_retrieve:str=None):
         if county_to_retrieve:
             break
     print(hs_links)
-    with open('hs_links.json' if not county_to_retrieve else county_to_retrieve+'.json','w') as file:
+    with open('hs_links.json' if not county_to_retrieve else county_to_retrieve.lower()+'_hs_links'+'.json','w') as file:
         dump(hs_links,file)
     file.close()
 
@@ -449,6 +449,24 @@ def get_phila_county_contacts():
 
     return contact_info
 
+def get_pittsburgh_contacts():
+    """
+    Retrieves contact info for Pittsburgh high school counselors and special education specialists
+    """
+    contact_info=dict()
+    school_to_link=get_school_to_link('pittsburgh_hs_links.json','Pittsburgh')
+    for school in school_to_link:
+        contact_info[school]=dict()
+        if school=='Brashear High School':
+            soup=get_soup(school_to_link[school],'staff')
+            tr_tags=soup.find_all('tr')
+            for tag in tr_tags:
+                staff_info=tag.find_all('td')
+                job_txt=staff_info[1].text
+                if 'Counselor' in job_txt and 'Transition' not in job_txt:
+                    contact_info[school][staff_info[0].text]=staff_info[2].text
+    return contact_info
+
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):
     """
     Writes the content of contact_info to an Excel file 
@@ -471,7 +489,5 @@ def write_to_excel_file(contact_info:dict,county:str,file_name:str):
             i+=1
     wb.save(file_name)    
 
-print(get_phila_county_contacts())
+print(get_pittsburgh_contacts())
 #write_to_excel_file(get_psd_contact_info(),'Philadelphia School District','counselor_contacts.xlsx')
-#get_PA_hs_links('Pittsburgh')
-#get_PA_hs_links()

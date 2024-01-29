@@ -23,15 +23,16 @@ def get_PA_hs_links(county_to_retrieve:str=None):
         while i<len_schools_html and (schools_html[i].name!='span' or county_to_retrieve not in schools_html[i].text):
             i+=1
     while i<len_schools_html:
-        county = schools_html[i].text
-        if 'County' not in county:
-            break
-        hs_links[county]=dict()
-        i+=1
+        if not county_to_retrieve:
+            county = schools_html[i].text
+            if 'County' not in county:
+                break
+            hs_links[county]=dict()
+            i+=1
         #Added to query to ensure the correct school is retrieved
         city = None
         while i<len_schools_html and (schools_html[i].name=='div' or (schools_html[i].name=='span' and schools_html[i].parent.name!='h2')):
-            if schools_html[i].name=='span' and schools_html[i].get('a'):
+            if schools_html[i].name=='span' and schools_html[i].find('a'):
                 city = schools_html[i].text
             elif schools_html[i].name=='div':
                 schools=schools_html[i].find_all('li')
@@ -57,7 +58,7 @@ def get_PA_hs_links(county_to_retrieve:str=None):
 
 def get_contacts_from_sprdsheet(soup:BeautifulSoup,job_col:str,name_cols:list[str],email_col:str,contact_info:dict,school:str,name_rvrs_order=False):
     """
-    Parses contacts of Special Ed staff and Counselors into a dictionary from a certain format of spreadsheet within HTML of the school website indicated by school
+    Parses contacts of high school Special Ed staff and Counselors into a dictionary from a certain format of spreadsheet within HTML of the school website indicated by school
     @param soup
     @param job_col : str column num where the job of the staff member is located
     @param name_cols : list of columns where the full name or first and last name of the staff member is located
@@ -173,16 +174,22 @@ def get_soup(url:str,suff:str):
     req=requests.get(url+suff)
     return BeautifulSoup(req.text,'html.parser')
 
-def get_phila_county_contact_info():
+def get_school_to_link(file_name:str, county:str):
     """
-    Retrieves the contact info for counselors and special education specialists in Philadelphia County
+    Extracts dictionary that maps school to link from json indicated by file_name
+    @param file_name
+    """
+    file = open(file_name)
+    school_to_link=load(file)[county]
+    file.close()
+    return school_to_link
+
+def get_phila_county_contacts():
+    """
+    Retrieves the contact info for high school counselors and special education specialists in Philadelphia County
     """
     contact_info = dict()
-    school_to_link=None
-    with open('philadelphia_school_links.json') as file:
-        school_to_link=load(file)
-        school_to_link=school_to_link['Philadelphia County (City of Philadelphia)']
-    file.close()
+    school_to_link=get_school_to_link('philadelphia_school_links.json','Philadelphia County (City of Philadelphia)')
     for school in school_to_link:
         contact_info[school]=dict()
         if school == 'John Bartram High School':
@@ -464,7 +471,7 @@ def write_to_excel_file(contact_info:dict,county:str,file_name:str):
             i+=1
     wb.save(file_name)    
 
-#print(get_psd_contact_info())
+print(get_phila_county_contacts())
 #write_to_excel_file(get_psd_contact_info(),'Philadelphia School District','counselor_contacts.xlsx')
-#get_PA_hs_links('Montgomery County')
+#get_PA_hs_links('Pittsburgh')
 #get_PA_hs_links()

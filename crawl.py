@@ -7,7 +7,12 @@ from random import randint
 from json import dump, load
 from search import google_search
 
-def get_PA_hs_links(county_to_retrieve=None):
+def get_PA_hs_links(county_to_retrieve:str=None):
+    """
+    Parses wikipedia page to create a dictionary that maps county to a dictionary that maps school name to school url and writes to a json file with 
+    the created dictionary hs_links
+    @param county_to_retrieve : str of a county in PA
+    """
     req = requests.get('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania')
     soup = BeautifulSoup(req.text,'html.parser')
     hs_links = dict()
@@ -46,11 +51,21 @@ def get_PA_hs_links(county_to_retrieve=None):
         if county_to_retrieve:
             break
     print(hs_links)
-    with open('hs_links.json','w') as file:
+    with open('hs_links.json' if not county_to_retrieve else county_to_retrieve+'.json','w') as file:
         dump(hs_links,file)
     file.close()
 
-def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,contact_info,school,name_rvrs_order=False):
+def get_contacts_from_sprdsheet(soup:BeautifulSoup,job_col:str,name_cols:list[str],email_col:str,contact_info:dict,school:str,name_rvrs_order=False):
+    """
+    Parses contacts of Special Ed staff and Counselors into a dictionary from a certain format of spreadsheet within HTML of the school website indicated by school
+    @param soup
+    @param job_col : str column num where the job of the staff member is located
+    @param name_cols : list of columns where the full name or first and last name of the staff member is located
+    @param email_col : str column where the email of the staff member is located
+    @param contact_info : dictionary mapping school name indicated by school to a dictionary mapping school staff member name to email
+    @param school : name of the school
+    @param name_rvrs_order : boolean indicating whether the names are in reverse order in a single column
+    """
     if school=='Shoemaker':
         soup=soup.find('table',attrs={'id':'tablepress-263'})
     rows = soup.find_all('tr',attrs={'class':re.compile("row-([2-9]|[1-9]\d{1,}) ?(even|odd)?")})
@@ -77,7 +92,15 @@ def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,conta
                         emails[i]=emails[i].replace('[at]','@')
                         contact_info[school][names[i]]=emails[i]
 
-def get_contacts_from_ul_tags(soup,school,header_num,contact_info,title_included=False):
+def get_contacts_from_ul_tags(soup:BeautifulSoup,school:str,header_num:str,contact_info:dict,title_included=False):
+    """
+    Parses ul tags of a certain format to retrieve contact info for counselors of the school indicated by school
+    @param soup
+    @param school : name of the school
+    @param header_num : str number for which type of header the staff member info is located
+    @param contact_info : dictionary mapping school name indicated by school to a dictionary mapping school staff member name to email
+    @param title_included : whether an honorific is included with the staff member name
+    """
     ul_tags=soup.find_all('ul',attrs={'class':None,'id':None})[1:]
     regex = '^[A-Z].[a-z]* [A-Z].[a-z]*'
     if title_included:
@@ -95,7 +118,13 @@ def get_contacts_from_ul_tags(soup,school,header_num,contact_info,title_included
         end_ind = colon_ind if colon_ind<comma_ind else comma_ind
         contact_info[school][header_txt[:end_ind]]=ul_tags[i].find('a').text
 
-def get_contacts_from_name_pos_class_div_tags(soup,contact_info,school):
+def get_contacts_from_name_pos_class_div_tags(soup:BeautifulSoup,contact_info:dict,school:str):
+    """
+    Parses div tags that have the classes name-position and email-phone for contact info of counselors of the school indicated by school
+    @param soup
+    @param contact_info : dictionary mapping school name indicated by school to a dictionary mapping school staff member name to email
+    @param school : name of the school
+    """
     div_tags=soup.find_all('div',attrs={'class':re.compile('name-position|email-phone')})
     num_tags = len(div_tags)
     for i in range(0,num_tags,2):
@@ -103,7 +132,13 @@ def get_contacts_from_name_pos_class_div_tags(soup,contact_info,school):
         if 'Counselor' in name_txt:
             contact_info[school][div_tags[i].find('a').text.replace('.\n\t','. ').replace('\n','').replace('\t','')]=div_tags[i+1].find('a').text
 
-def get_contacts_from_p_tags(soup,contact_info,school):
+def get_contacts_from_p_tags(soup:BeautifulSoup,contact_info:dict,school:str):
+    """
+    Parses p tags of a certain format to extract contact info of Special Education specialists and counselors of the school indicated by school
+    @param soup
+    @param contact_info : dictionary mapping school name indicated by school to a dictionary mapping school staff member name to email
+    @param school : name of the school
+    """
     p_tags = soup.find_all('p')
     for tag in p_tags:
         a_tag=tag.find('a',attrs={'href':re.compile('([A-Za-z])*@([A-Za-z0-9])*.org')})
@@ -111,7 +146,11 @@ def get_contacts_from_p_tags(soup,contact_info,school):
         if a_tag and ('Counselor' in tag_txt or 'Special Ed' in tag_txt) and 'LS' not in tag_txt:
             contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:')
 
-def is_hs_staff(txt):
+def is_hs_staff(txt:str):
+    """
+    Checks if the staff in the given text of a certain format is a high school staff member
+    @txt
+    """
     grade_ind = txt.find('Grade')
     if grade_ind==-1:
         return True
@@ -125,11 +164,19 @@ def is_hs_staff(txt):
     grade = int(grade)
     return grade>8
 
-def get_soup(url,suff):
+def get_soup(url:str,suff:str):
+    """
+    Makes the request and returns the corresponding BeautifulSoup object
+    @param url : base link for the school
+    @param suff : suffix which leads to counselor or staff page for the school
+    """
     req=requests.get(url+suff)
     return BeautifulSoup(req.text,'html.parser')
 
-def get_psd_contact_info():
+def get_phila_county_contact_info():
+    """
+    Retrieves the contact info for counselors and special education specialists in Philadelphia County
+    """
     contact_info = dict()
     school_to_link=None
     with open('philadelphia_school_links.json') as file:
@@ -395,10 +442,16 @@ def get_psd_contact_info():
 
     return contact_info
 
-def write_to_excel_file(contact_info,school_distr,file_name):
+def write_to_excel_file(contact_info:dict,county:str,file_name:str):
+    """
+    Writes the content of contact_info to an Excel file 
+    @param contact_info : dictionary mapping school name indicated by school to a dictionary mapping school staff member name to email
+    @param county
+    @param file_name
+    """
     wb = openpyxl.Workbook()
     sheet = wb.active
-    sheet.title = school_distr
+    sheet.title = county
     sheet.cell(row=1, column=1).value='School'
     sheet.cell(row=1,column=2).value='Counselor Name'
     sheet.cell(row=1, column=3).value='Email'

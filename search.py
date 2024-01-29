@@ -1,7 +1,11 @@
 from googlesearch import search
 import requests
 
-def google_search(query):
+def google_search(query:str):
+    """
+    Searches for the query on Google
+    @query
+    """
     links=search(query,stop=1)
     for link in links:
         try:
@@ -16,6 +20,7 @@ def print_couns_page_url(school_to_link,school):
     """
     Prints a potential counselor page url
     """
+    #For testing each of the suffixes and verifying whether they worked
     req = None
     suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','counseling','staff','faculty',
             'contact-us','staff-directory','about/staff','high-school-support-services/','apps/staff/','our-team','staff/hs-faculty/',
@@ -28,7 +33,9 @@ def print_couns_page_url(school_to_link,school):
             req=test_req
             break
     if not req:
-        link=google_search('counselor site:'+school_to_link[school])
-        if link:
-            print(link)
-            req=requests.get(link)
+        couns_link=google_search('counselor site:'+school_to_link[school])
+        if couns_link:
+            print(couns_link)
+        special_ed_link=google_search('special ed site:'+school_to_link[school])
+        if special_ed_link:
+            print(special_ed_link)

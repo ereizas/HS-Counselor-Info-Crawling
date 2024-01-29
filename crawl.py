@@ -1,24 +1,55 @@
 import requests
 from bs4 import BeautifulSoup
-from googlesearch import search
 import re
-from openpyxl import load_workbook
 import openpyxl
-from random import randint
 from time import sleep
+from random import randint
 from json import dump, load
+from search import google_search
 
-def google_search(query):
-    links=search(query,stop=1)
-    for link in links:
-        try:
-            req=requests.get(str(link))
-            if req.status_code==200:
-                return str(link)
-        except Exception as e:
-            print(f'Error that occurred from query {query}: {e}')
-    return None
-    
+def get_PA_hs_links(county_to_retrieve=None):
+    req = requests.get('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania')
+    soup = BeautifulSoup(req.text,'html.parser')
+    hs_links = dict()
+    schools_html = soup.find_all(re.compile('span|div'),attrs={'class':re.compile('mw-headline|div-col')})
+    len_schools_html = len(schools_html)
+    i=0
+    if county_to_retrieve:
+        while i<len_schools_html and (schools_html[i].name!='span' or county_to_retrieve not in schools_html[i].text):
+            i+=1
+    while i<len_schools_html:
+        county = schools_html[i].text
+        if 'County' not in county:
+            break
+        hs_links[county]=dict()
+        i+=1
+        #Added to query to ensure the correct school is retrieved
+        city = None
+        while i<len_schools_html and (schools_html[i].name=='div' or (schools_html[i].name=='span' and schools_html[i].parent.name!='h2')):
+            if schools_html[i].name=='span' and schools_html[i].get('a'):
+                city = schools_html[i].text
+            elif schools_html[i].name=='div':
+                schools=schools_html[i].find_all('li')
+                for school in schools:
+                    print(school.text)
+                    query = school.text
+                    if city:
+                        query+=' ' + city
+                    else:
+                        query+=' ' +county
+                    goog_srch_res = google_search(query)
+                    print(f"Sleeping for 30 seconds")
+                    sleep(randint(30, 40))
+                    if goog_srch_res:
+                        hs_links[county][school.text]=goog_srch_res
+            i+=1
+        if county_to_retrieve:
+            break
+    print(hs_links)
+    with open('hs_links.json','w') as file:
+        dump(hs_links,file)
+    file.close()
+
 def get_contacts_from_sprdsheet(soup,job_col,name_cols:list[str],email_col,contact_info,school,name_rvrs_order=False):
     if school=='Shoemaker':
         soup=soup.find('table',attrs={'id':'tablepress-263'})
@@ -80,49 +111,6 @@ def get_contacts_from_p_tags(soup,contact_info,school):
         if a_tag and ('Counselor' in tag_txt or 'Special Ed' in tag_txt) and 'LS' not in tag_txt:
             contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:')
 
-def get_PA_hs_links(county_to_retrieve=None):
-    req = requests.get('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania')
-    soup = BeautifulSoup(req.text,'html.parser')
-    hs_links = dict()
-    schools_html = soup.find_all(re.compile('span|div'),attrs={'class':re.compile('mw-headline|div-col')})
-    len_schools_html = len(schools_html)
-    i=0
-    if county_to_retrieve:
-        while i<len_schools_html and (schools_html[i].name!='span' or county_to_retrieve not in schools_html[i].text):
-            i+=1
-    while i<len_schools_html:
-        county = schools_html[i].text
-        if 'County' not in county:
-            break
-        hs_links[county]=dict()
-        i+=1
-        #Added to query to ensure the correct school is retrieved
-        city = None
-        while i<len_schools_html and (schools_html[i].name=='div' or (schools_html[i].name=='span' and schools_html[i].parent.name!='h2')):
-            if schools_html[i].name=='span' and schools_html[i].get('a'):
-                city = schools_html[i].text
-            elif schools_html[i].name=='div':
-                schools=schools_html[i].find_all('li')
-                for school in schools:
-                    print(school.text)
-                    query = school.text
-                    if city:
-                        query+=' ' + city
-                    else:
-                        query+=' ' +county
-                    goog_srch_res = google_search(query)
-                    print(f"Sleeping for 30 seconds")
-                    sleep(randint(30, 40))
-                    if goog_srch_res:
-                        hs_links[county][school.text]=goog_srch_res
-            i+=1
-        if county_to_retrieve:
-            break
-    print(hs_links)
-    with open('hs_links.json','w') as file:
-        dump(hs_links,file)
-    file.close()
-
 def is_hs_staff(txt):
     grade_ind = txt.find('Grade')
     if grade_ind==-1:
@@ -140,27 +128,6 @@ def is_hs_staff(txt):
 def get_soup(url,suff):
     req=requests.get(url+suff)
     return BeautifulSoup(req.text,'html.parser')
-
-def print_couns_page_url(school_to_link,school):
-    """
-    Prints a potential counselor page url
-    """
-    req = None
-    suffs = ['counselors-corner','counselor-corner','faculty-staff','counselor','counselors','support-team','counseling','staff','faculty',
-            'contact-us','staff-directory','about/staff','high-school-support-services/','apps/staff/','our-team','staff/hs-faculty/',
-            'our-families/support-services','families/staff-directory/','support','faculty-and-staff','about/facultystaffdirectory',
-            'who-we-are/meet-our-educators','discover/facultystaff','about/faculty']
-    for suff in suffs:
-        test_req=requests.get(school_to_link[school]+suff)
-        if test_req.status_code>=200 and test_req.status_code<300:
-            print(test_req.url)
-            req=test_req
-            break
-    if not req:
-        link=google_search('counselor site:'+school_to_link[school])
-        if link:
-            print(link)
-            req=requests.get(link)
 
 def get_psd_contact_info():
     contact_info = dict()
@@ -445,6 +412,6 @@ def write_to_excel_file(contact_info,school_distr,file_name):
     wb.save(file_name)    
 
 #print(get_psd_contact_info())
-write_to_excel_file(get_psd_contact_info(),'Philadelphia School District','counselor_contacts.xlsx')
+#write_to_excel_file(get_psd_contact_info(),'Philadelphia School District','counselor_contacts.xlsx')
 #get_PA_hs_links('Montgomery County')
 #get_PA_hs_links()

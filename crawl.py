@@ -465,6 +465,18 @@ def get_pittsburgh_contacts():
                 job_txt=staff_info[1].text
                 if 'Counselor' in job_txt and 'Transition' not in job_txt:
                     contact_info[school][staff_info[0].text]=staff_info[2].text
+        elif school=='City Charter High School':
+            soup=get_soup(school_to_link[school],'meet-our-staff#support')
+            div_tags = soup.find_all('div','col-md-5')
+            for tag in div_tags:
+                tag_txt = tag.text
+                if 'Counselor' in tag_txt or 'Special Ed' in tag_txt:
+                    strong_tag = tag.find('strong')
+                    b_tag = tag.find('b')
+                    if b_tag:
+                        contact_info[school][b_tag.text]=tag.find('a').text
+                    elif strong_tag:
+                        contact_info[school][strong_tag.text]=tag.find('a').text
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):

@@ -454,7 +454,8 @@ def get_pittsburgh_contacts():
     Retrieves contact info for Pittsburgh high school counselors and special education specialists
     """
     contact_info=dict()
-    school_to_link=get_school_to_link('pittsburgh_hs_links.json','Pittsburgh')
+    #school_to_link=get_school_to_link('pittsburgh_hs_links.json','Pittsburgh')
+    school_to_link={"Pittsburgh Obama 6-12": ""}
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Brashear High School':
@@ -477,6 +478,15 @@ def get_pittsburgh_contacts():
                         contact_info[school][b_tag.text]=tag.find('a').text
                     elif strong_tag:
                         contact_info[school][strong_tag.text]=tag.find('a').text
+        elif school=='Pittsburgh Obama 6-12':
+            soup=get_soup('https://www.pghschools.org/domain/823','')
+            strong_tags=soup.find_all('strong')
+            for tag in strong_tags:
+                tag_txt=tag.text
+                #space at the end of counselor is to prevent the heading "Counselors and Social Workers" from being parsed
+                if ('Counselor ' in tag_txt or 'Learning Support' in tag_txt or 'Psychologist' in tag_txt) and ' Nurse' not in tag_txt:
+                    dash_ind = tag_txt.find('-')
+                    contact_info[school][tag_txt[:dash_ind-1].replace('\xa0',' ')]=tag_txt[tag_txt.find('-', dash_ind+1)+2:]
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):

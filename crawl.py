@@ -455,7 +455,7 @@ def get_pittsburgh_contacts():
     """
     contact_info=dict()
     #school_to_link=get_school_to_link('pittsburgh_hs_links.json','Pittsburgh')
-    school_to_link={"Pittsburgh Obama 6-12": ""}
+    school_to_link={"The University School": "https://universityschoolpgh.org/"}
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Brashear High School':
@@ -484,9 +484,31 @@ def get_pittsburgh_contacts():
             for tag in strong_tags:
                 tag_txt=tag.text
                 #space at the end of counselor is to prevent the heading "Counselors and Social Workers" from being parsed
+                #Nurse is ignored bc it is joined w a relevant contact
                 if ('Counselor ' in tag_txt or 'Learning Support' in tag_txt or 'Psychologist' in tag_txt) and ' Nurse' not in tag_txt:
                     dash_ind = tag_txt.find('-')
                     contact_info[school][tag_txt[:dash_ind-1].replace('\xa0',' ')]=tag_txt[tag_txt.find('-', dash_ind+1)+2:]
+        elif school=='The University School':
+            soup=get_soup(school_to_link[school],'faculty/')
+            div_tags=soup.find_all('div',attrs={'class':'et_pb_team_member_description'})
+            for tag in div_tags:
+                job_txt = tag.find('p',attrs={'class':'et_pb_member_position'}).text
+                if 'Support Services' in job_txt or 'Counselor' in job_txt:
+                    name = tag.find('h4',attrs={'class':'et_pb_module_header'}).text
+                    a_tag=tag.find('a')
+                    if a_tag:
+                        contact_info[school][name]=a_tag.get('href')
+                        continue
+                    p_tag=tag.find('p',attrs={'class':None})
+                    if p_tag:
+                        txt=p_tag.text
+                        at_symb_ind = txt.find('@')
+                        if at_symb_ind!=-1:
+                            i = at_symb_ind-1
+                            while txt[i-1]!=' ' and txt[i-1]!='\n':
+                                i-=1
+                            contact_info[school][name]=txt[i:txt.find('.org')+4]
+                        
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):

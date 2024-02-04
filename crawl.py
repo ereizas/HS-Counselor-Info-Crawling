@@ -455,7 +455,7 @@ def get_pittsburgh_contacts():
     """
     contact_info=dict()
     #school_to_link=get_school_to_link('pittsburgh_hs_links.json','Pittsburgh')
-    school_to_link={"The University School": "https://universityschoolpgh.org/"}
+    school_to_link={"University Preparatory School": "https://www.pghschools.org/milliones"}
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Brashear High School':
@@ -508,7 +508,18 @@ def get_pittsburgh_contacts():
                             while txt[i-1]!=' ' and txt[i-1]!='\n':
                                 i-=1
                             contact_info[school][name]=txt[i:txt.find('.org')+4]
-                        
+        elif school=='University Preparatory School':
+            soup=get_soup('https://www.uprepmilliones.com/staff','')
+            div_tags=soup.find_all('div',attrs={'role':'listitem'})
+            for tag in div_tags:
+                job_tag=tag.find('span',attrs={'style':'font-family:futura-lt-w01-book,sans-serif;'})
+                if job_tag:
+                    job_txt=job_tag.text
+                    print(job_txt)
+                    if ('PSE' in job_txt or 'Counselor' in job_txt or 'Support' in job_txt or 'Psychologist' in job_txt) and 'MS' not in job_txt:
+                        name = ' '.join([tag.text for tag in tag.find_all('span',attrs={'style':'font-family:open sans,sans-serif;'})])
+                        contact_info[school][name.replace('\xa0','')] = tag.find('a').text
+
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):

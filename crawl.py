@@ -455,7 +455,7 @@ def get_pittsburgh_contacts():
     """
     contact_info=dict()
     #school_to_link=get_school_to_link('pittsburgh_hs_links.json','Pittsburgh')
-    school_to_link={"University Preparatory School": "https://www.pghschools.org/milliones"}
+    school_to_link={"Urban Pathways Charter School": "https://www.upcs.net/"}
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Brashear High School':
@@ -519,6 +519,14 @@ def get_pittsburgh_contacts():
                     if ('PSE' in job_txt or 'Counselor' in job_txt or 'Support' in job_txt or 'Psychologist' in job_txt) and 'MS' not in job_txt:
                         name = ' '.join([tag.text for tag in tag.find_all('span',attrs={'style':'font-family:open sans,sans-serif;'})])
                         contact_info[school][name.replace('\xa0','')] = tag.find('a').text
+        elif school=='Urban Pathways Charter School':
+            soup=get_soup(school_to_link[school],'counseling-and-support-services/')
+            p_tags=soup.find_all('p',attrs={'style':re.compile('padding')})
+            for tag in p_tags:
+                tag_txt = tag.text
+                if ('Counselor' in tag_txt and 'Internship' not in tag_txt) or 'Psychologist' in tag_txt:
+                    a_tag=tag.find('a')
+                    contact_info[school][a_tag.text]=a_tag.get('href')
 
     return contact_info
 

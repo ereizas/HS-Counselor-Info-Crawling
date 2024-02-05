@@ -455,7 +455,7 @@ def get_pittsburgh_contacts():
     """
     contact_info=dict()
     #school_to_link=get_school_to_link('pittsburgh_hs_links.json','Pittsburgh')
-    school_to_link={"Urban Pathways Charter School": "https://www.upcs.net/"}
+    school_to_link={"Woodland Hills High School": "https://www.whsd.net/our-schools/senior-high-school"}
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Brashear High School':
@@ -527,6 +527,17 @@ def get_pittsburgh_contacts():
                 if ('Counselor' in tag_txt and 'Internship' not in tag_txt) or 'Psychologist' in tag_txt:
                     a_tag=tag.find('a')
                     contact_info[school][a_tag.text]=a_tag.get('href')
+        elif school=='Woodland Hills High School':
+            soup=get_soup('https://www.whsd.net/departments/special-education','')
+            header_tags=soup.find('div',attrs={'class':'fsElement fsContent'}).find('div',attrs={'class':'fsElementContent'}).find_all(re.compile('h[5-6]'))
+            print(header_tags)
+            for i in range(0,len(header_tags),3):
+                strong_tag = header_tags[i].find('strong')
+                if strong_tag:
+                    name_and_pos_txt = strong_tag.text
+                    if 'Special Education' in name_and_pos_txt:
+                        email_txt = header_tags[i+1].text
+                        contact_info[school][name_and_pos_txt[:name_and_pos_txt.find('\n')]]=email_txt[email_txt.find('Email: ')+7:]
 
     return contact_info
 

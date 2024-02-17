@@ -550,7 +550,7 @@ def get_adams_contacts():
     school_to_link=get_school_to_link('adams_hs_links.json','Adams')
     for school in school_to_link:
         contact_info[school]=dict()
-        if school=='Biglerville High School, Biglerville':
+        if school=='Biglerville High School':
             soup=get_soup('https://www.upperadams.org/departments/student-services-special-education/department-home/special-education','')
             tags = soup.find_all(re.compile('em|p'))
             num_tags = len(tags)
@@ -563,8 +563,18 @@ def get_adams_contacts():
                 if 'Learning' in tag_txt or 'Autistic' in tag_txt:
                     contact_info[school][tag_txt[:tag_txt.rfind('-')-1]]=tags[i].find('a').text.strip('mailto:')
                 i+=1
-        elif school=='Fairfield Area High School':
-            soup=get_soup('https://www.fairfieldpaschools.org/Page/226','')
+        elif school=='Littlestown High School':
+            soup=get_soup(school_to_link[school],'/staff?filter_ids=117586,117596')
+            div_tags=soup.find_all('div',attrs={'class':'staff-info'})
+            for tag in div_tags:
+                dept = tag.find('div',attrs={'class':'department'}).text
+                print(dept)
+                if 'Learning Support' in dept or 'Guidance' in dept:
+                    name = tag.find('div',attrs={'class':'name'}).text
+                    comma_ind = name.find(',')
+                    if comma_ind==-1:
+                        comma_ind=len(name)-1
+                    contact_info[school][name[:comma_ind].strip('\n ')]=tag.find('a').text.strip('\n ')
             
     return contact_info
 

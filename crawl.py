@@ -22,13 +22,15 @@ def get_PA_hs_links(county_to_retrieve:str=None):
     if county_to_retrieve:
         while i<len_schools_html and (schools_html[i].name!='span' or county_to_retrieve not in schools_html[i].text):
             i+=1
+        i+=1
     while i<len_schools_html:
+        county = None if not county_to_retrieve else county_to_retrieve
         if not county_to_retrieve:
             county = schools_html[i].text
             if 'County' not in county:
                 break
-            hs_links[county]=dict()
             i+=1
+        hs_links[county]=dict()
         #Added to query to ensure the correct school is retrieved
         city = None
         while i<len_schools_html and (schools_html[i].name=='div' or (schools_html[i].name=='span' and schools_html[i].parent.name!='h2')):
@@ -454,8 +456,7 @@ def get_pittsburgh_contacts():
     Retrieves contact info for Pittsburgh high school counselors and special education specialists
     """
     contact_info=dict()
-    #school_to_link=get_school_to_link('pittsburgh_hs_links.json','Pittsburgh')
-    school_to_link={"Woodland Hills High School": "https://www.whsd.net/our-schools/senior-high-school"}
+    school_to_link=get_school_to_link('pittsburgh_hs_links.json','Pittsburgh')
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Brashear High School':
@@ -475,9 +476,9 @@ def get_pittsburgh_contacts():
                     strong_tag = tag.find('strong')
                     b_tag = tag.find('b')
                     if b_tag:
-                        contact_info[school][b_tag.text]=tag.find('a').text
+                        contact_info[school][b_tag.text[:b_tag.text.find(',')]]=tag.find('a').text
                     elif strong_tag:
-                        contact_info[school][strong_tag.text]=tag.find('a').text
+                        contact_info[school][strong_tag.text[:strong_tag.text.find(',')]]=tag.find('a').text
         elif school=='Pittsburgh Obama 6-12':
             soup=get_soup('https://www.pghschools.org/domain/823','')
             strong_tags=soup.find_all('strong')
@@ -515,7 +516,6 @@ def get_pittsburgh_contacts():
                 job_tag=tag.find('span',attrs={'style':'font-family:futura-lt-w01-book,sans-serif;'})
                 if job_tag:
                     job_txt=job_tag.text
-                    print(job_txt)
                     if ('PSE' in job_txt or 'Counselor' in job_txt or 'Support' in job_txt or 'Psychologist' in job_txt) and 'MS' not in job_txt:
                         name = ' '.join([tag.text for tag in tag.find_all('span',attrs={'style':'font-family:open sans,sans-serif;'})])
                         contact_info[school][name.replace('\xa0','')] = tag.find('a').text
@@ -530,7 +530,6 @@ def get_pittsburgh_contacts():
         elif school=='Woodland Hills High School':
             soup=get_soup('https://www.whsd.net/departments/special-education','')
             header_tags=soup.find('div',attrs={'class':'fsElement fsContent'}).find('div',attrs={'class':'fsElementContent'}).find_all(re.compile('h[5-6]'))
-            print(header_tags)
             for i in range(0,len(header_tags),3):
                 strong_tag = header_tags[i].find('strong')
                 if strong_tag:
@@ -538,7 +537,6 @@ def get_pittsburgh_contacts():
                     if 'Special Education' in name_and_pos_txt:
                         email_txt = header_tags[i+1].text
                         contact_info[school][name_and_pos_txt[:name_and_pos_txt.find('\n')]]=email_txt[email_txt.find('Email: ')+7:]
-
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):
@@ -563,5 +561,6 @@ def write_to_excel_file(contact_info:dict,county:str,file_name:str):
             i+=1
     wb.save(file_name)    
 
-print(get_pittsburgh_contacts())
-#write_to_excel_file(get_psd_contact_info(),'Philadelphia School District','counselor_contacts.xlsx')
+#get_PA_hs_links('Adams')
+#print(get_pittsburgh_contacts())
+#write_to_excel_file(get_pittsburgh_contacts(),'Pittsburgh','counselor_contacts.xlsx')

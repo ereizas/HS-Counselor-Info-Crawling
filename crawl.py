@@ -40,7 +40,10 @@ def get_PA_hs_links(county_to_retrieve:str=None):
                 schools=schools_html[i].find_all('li')
                 for school in schools:
                     print(school.text)
-                    query = school.text
+                    comma_ind = school.text.find(',')
+                    if comma_ind==-1:
+                        comma_ind = len(school.text)-1
+                    query = school.text[:comma_ind]
                     if city:
                         query+=' ' + city
                     else:
@@ -560,6 +563,9 @@ def get_adams_contacts():
                 if 'Learning' in tag_txt or 'Autistic' in tag_txt:
                     contact_info[school][tag_txt[:tag_txt.rfind('-')-1]]=tags[i].find('a').text.strip('mailto:')
                 i+=1
+        elif school=='Fairfield Area High School':
+            soup=get_soup('https://www.fairfieldpaschools.org/Page/226','')
+            
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):

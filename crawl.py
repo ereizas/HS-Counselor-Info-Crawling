@@ -539,6 +539,29 @@ def get_pittsburgh_contacts():
                         contact_info[school][name_and_pos_txt[:name_and_pos_txt.find('\n')]]=email_txt[email_txt.find('Email: ')+7:]
     return contact_info
 
+def get_adams_contacts():
+    """
+    Retrieves the contact info for high school counselors and special education specialists in Philadelphia County
+    """
+    contact_info = dict()
+    school_to_link=get_school_to_link('adams_hs_links.json','Adams')
+    for school in school_to_link:
+        contact_info[school]=dict()
+        if school=='Biglerville High School, Biglerville':
+            soup=get_soup('https://www.upperadams.org/departments/student-services-special-education/department-home/special-education','')
+            tags = soup.find_all(re.compile('em|p'))
+            num_tags = len(tags)
+            i=0
+            while i<num_tags and tags[i].text!='Biglerville High School':
+                i+=1
+            i+=1
+            while i<num_tags and tags[i].name!='em':
+                tag_txt = tags[i].text
+                if 'Learning' in tag_txt or 'Autistic' in tag_txt:
+                    contact_info[school][tag_txt[:tag_txt.rfind('-')-1]]=tags[i].find('a').text.strip('mailto:')
+                i+=1
+    return contact_info
+
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):
     """
     Writes the content of contact_info to an Excel file 
@@ -562,5 +585,5 @@ def write_to_excel_file(contact_info:dict,county:str,file_name:str):
     wb.save(file_name)    
 
 #get_PA_hs_links('Adams')
-#print(get_pittsburgh_contacts())
+print(get_adams_contacts())
 #write_to_excel_file(get_pittsburgh_contacts(),'Pittsburgh','counselor_contacts.xlsx')

@@ -576,6 +576,24 @@ def get_adams_contacts():
                     contact_info[school][name[:comma_ind].strip('\n ')]=tag.find('a').text.strip('\n ')
     return contact_info
 
+def get_armstrong_contacts():
+    """
+    Retrieves the contact info for high school counselors and special education specialists in Armstrong County
+    """
+    contact_info = dict()
+    school_to_link=get_school_to_link('armstrong_hs_links.json','Armstrong')
+    for school in school_to_link:
+        contact_info[school]=dict()
+        if school=='Apollo-Ridge High School':
+            soup=get_soup(school_to_link[school],'apps/departments/')
+            spec_ed_dept_url_suff = soup.find('a',string='Special Education').get('href')[1:]
+            spec_ed_dept_url_suff = spec_ed_dept_url_suff+'&pREC_ID=staff'
+            soup=get_soup(school_to_link[school],spec_ed_dept_url_suff)
+            div_tags=soup.find_all('div',attrs={'class':'user-info ada'})
+            for tag in div_tags:
+                contact_info[school][tag.find('a',attrs={'class':'name'}).text.strip('\n\t')]=tag.find('span',attrs={'class':'user-email'}).find('a',attrs={'class':'email'}).text
+    return contact_info
+
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):
     """
     Writes the content of contact_info to an Excel file 

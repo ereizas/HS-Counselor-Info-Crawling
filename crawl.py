@@ -40,10 +40,7 @@ def get_PA_hs_links(county_to_retrieve:str=None):
                 schools=schools_html[i].find_all('li')
                 for school in schools:
                     print(school.text)
-                    comma_ind = school.text.find(',')
-                    if comma_ind==-1:
-                        comma_ind = len(school.text)-1
-                    query = school.text[:comma_ind]
+                    query = school.text
                     if city:
                         query+=' ' + city
                     else:
@@ -52,7 +49,10 @@ def get_PA_hs_links(county_to_retrieve:str=None):
                     print(f"Sleeping for 30 seconds")
                     sleep(randint(30, 40))
                     if goog_srch_res:
-                        hs_links[county][school.text]=goog_srch_res
+                        comma_ind = school.text.find(',')
+                        if comma_ind==-1:
+                            comma_ind = len(school.text)-1
+                        hs_links[county][school.text[:comma_ind]]=goog_srch_res
             i+=1
         if county_to_retrieve:
             break
@@ -568,14 +568,12 @@ def get_adams_contacts():
             div_tags=soup.find_all('div',attrs={'class':'staff-info'})
             for tag in div_tags:
                 dept = tag.find('div',attrs={'class':'department'}).text
-                print(dept)
                 if 'Learning Support' in dept or 'Guidance' in dept:
                     name = tag.find('div',attrs={'class':'name'}).text
                     comma_ind = name.find(',')
                     if comma_ind==-1:
                         comma_ind=len(name)-1
                     contact_info[school][name[:comma_ind].strip('\n ')]=tag.find('a').text.strip('\n ')
-            
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):
@@ -600,6 +598,6 @@ def write_to_excel_file(contact_info:dict,county:str,file_name:str):
             i+=1
     wb.save(file_name)    
 
-#get_PA_hs_links('Adams')
-print(get_adams_contacts())
-#write_to_excel_file(get_pittsburgh_contacts(),'Pittsburgh','counselor_contacts.xlsx')
+#get_PA_hs_links('Armstrong')
+print(get_armstrong_contacts())
+#write_to_excel_file(get_adams_contacts(),'Adams','counselor_contacts.xlsx')

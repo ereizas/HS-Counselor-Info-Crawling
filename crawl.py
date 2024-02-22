@@ -152,6 +152,18 @@ def get_contacts_from_p_tags(soup:BeautifulSoup,contact_info:dict,school:str):
         if a_tag and ('Counselor' in tag_txt or 'Special Ed' in tag_txt) and 'LS' not in tag_txt:
             contact_info[school][a_tag.text]=a_tag.get('href').strip('mailto:')
 
+def get_contacts_from_staff_info_blocks(school_to_link,school,job_keywords,contact_info):
+    i=1
+    div_tags=1
+    while div_tags:
+        soup=get_soup(school_to_link[school],'/staff?page_no='+str(i))
+        div_tags=soup.find_all('div',attrs={'class':'staff-info'})
+        for tag in div_tags:
+            title = tag.find('div',attrs={'class':'title'}).text
+            if any([keyword in title for keyword in job_keywords]):
+                contact_info[school][tag.find('div',attrs={'class':'name'}).text.strip('\n ')]=tag.find('a').text.strip('\n ')
+        i+=1
+
 def is_hs_staff(txt:str):
     """
     Checks if the staff in the given text of a certain format is a high school staff member
@@ -451,7 +463,6 @@ def get_phila_county_contacts():
                 job_txt = tag.find('p',attrs={'class':None}).text
                 if 'Support Service' in job_txt or 'Psychologist' in job_txt:
                     contact_info[school][tag.find('p').text]=tag.find('a').text
-
     return contact_info
 
 def get_pittsburgh_contacts():
@@ -600,16 +611,7 @@ def get_bedford_contacts():
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Bedford High School':
-            i=1
-            div_tags=1
-            while div_tags:
-                soup=get_soup(school_to_link[school],'/staff?page_no='+str(i))
-                div_tags=soup.find_all('div',attrs={'class':'staff-info'})
-                for tag in div_tags:
-                    title = tag.find('div',attrs={'class':'title'}).text
-                    if 'Learning Support' in title or 'Special Ed' in title or 'Counselor' in title:
-                        contact_info[school][tag.find('div',attrs={'class':'name'}).text.strip('\n ')]=tag.find('a').text.strip('\n ')
-                i+=1
+            get_contacts_from_staff_info_blocks(school_to_link,school,['Learning Support','Special Ed','Counselor'],contact_info)
         elif school=='Chestnut Ridge Senior High School':
             soup=get_soup(school_to_link[school],'apps/staff')
             div_tags=soup.find_all('div',attrs={'class':'user-info ada'})
@@ -624,6 +626,8 @@ def get_bedford_contacts():
                 tag_txt=tag.text
                 if 'Special Ed' in tag_txt:
                     contact_info[school][tag_txt[:tag_txt.find('\xa0')]]=tag.find('a').text
+        elif school=='Tussey Mountain Junior/Senior High School':
+            get_contacts_from_staff_info_blocks(school_to_link,school,['Support'],contact_info)  
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):

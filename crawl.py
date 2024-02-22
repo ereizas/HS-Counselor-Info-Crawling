@@ -617,6 +617,13 @@ def get_bedford_contacts():
                 job=tag.find('span',attrs={'class':'user-position user-data'})
                 if job and 'Special Ed' in job.text:
                     contact_info[school][tag.find('a',attrs={'class':'name'}).text.strip('\n\t')]=tag.find('span',attrs={'class':'user-email'}).find('a',attrs={'class':'email'}).text
+        elif school=='HOPE for Hyndman Charter School':
+            soup=get_soup(school_to_link[school],'staff-1')
+            p_tags=soup.find_all('p')
+            for tag in p_tags:
+                tag_txt=tag.text
+                if 'Special Ed' in tag_txt:
+                    contact_info[school][tag_txt[:tag_txt.find('\xa0')]]=tag.find('a').text
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):

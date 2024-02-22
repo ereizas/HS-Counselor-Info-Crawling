@@ -610,6 +610,13 @@ def get_bedford_contacts():
                     if 'Learning Support' in title or 'Special Ed' in title or 'Counselor' in title:
                         contact_info[school][tag.find('div',attrs={'class':'name'}).text.strip('\n ')]=tag.find('a').text.strip('\n ')
                 i+=1
+        elif school=='Chestnut Ridge Senior High School':
+            soup=get_soup(school_to_link[school],'apps/staff')
+            div_tags=soup.find_all('div',attrs={'class':'user-info ada'})
+            for tag in div_tags:
+                job=tag.find('span',attrs={'class':'user-position user-data'})
+                if job and 'Special Ed' in job.text:
+                    contact_info[school][tag.find('a',attrs={'class':'name'}).text.strip('\n\t')]=tag.find('span',attrs={'class':'user-email'}).find('a',attrs={'class':'email'}).text
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):

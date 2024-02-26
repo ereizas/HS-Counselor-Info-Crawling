@@ -39,19 +39,20 @@ def get_PA_hs_links(county_to_retrieve:str=None):
             elif schools_html[i].name=='div':
                 schools=schools_html[i].find_all('li')
                 for school in schools:
-                    print(school.text)
                     query = school.text
-                    if city:
-                        query+=' ' + city
-                    else:
-                        query+=' ' +county
+                    if ',' not in query:
+                        if city:
+                            query+=' ' + city
+                        else:
+                            query+=' ' +county
+                    print(query)
                     goog_srch_res = google_search(query)
                     print(f"Sleeping for 30 seconds")
                     sleep(randint(30, 40))
                     if goog_srch_res:
                         comma_ind = school.text.find(',')
                         if comma_ind==-1:
-                            comma_ind = len(school.text)-1
+                            comma_ind = len(school.text)
                         hs_links[county][school.text[:comma_ind]]=goog_srch_res
             i+=1
         if county_to_retrieve:
@@ -652,6 +653,6 @@ def write_to_excel_file(contact_info:dict,county:str,file_name:str):
             i+=1
     wb.save(file_name)    
 
-#get_PA_hs_links('Bedford')
-print(get_bedford_contacts())
-#write_to_excel_file(get_armstrong_contacts(),'Armstrong','counselor_contacts.xlsx')
+#get_PA_hs_links('Blair')
+#print(get_bedford_contacts())
+#write_to_excel_file(get_bedford_contacts(),'Bedford','counselor_contacts.xlsx')

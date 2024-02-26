@@ -631,6 +631,32 @@ def get_bedford_contacts():
             get_contacts_from_staff_info_blocks(school_to_link,school,['Support'],contact_info)  
     return contact_info
 
+def get_blair_contacts():
+    contact_info=dict()
+    school_to_link=get_school_to_link('blair_hs_links.json','Blair')
+    for school in school_to_link:
+        contact_info[school]=dict()
+        if school=='Williamsburg Community Junior/Senior High School':
+            soup=get_soup(school_to_link[school],'')
+            soup=get_soup(school_to_link[school]+soup.find('span',string='Special Education').parent.get('href')[1:],'')
+            div_tags=soup.find_all('div',attrs={'class':None,'id':None})
+            i = 0
+            n = len(div_tags)
+            while i<n:
+                name_tag = div_tags[i].find('strong')
+                if name_tag:
+                    job_txt = div_tags[i+1].text
+                    if 'Special Ed' in job_txt or 'Psychologist' in job_txt or 'Learning Support 9-12' in job_txt:
+                        comma_ind = name_tag.text.find(',')
+                        if comma_ind==-1:
+                            comma_ind = len(name_tag.text)
+                        contact_info[school][name_tag.text[:comma_ind]]=div_tags[i+2].text.strip('\xa0')
+                    i+=2
+                i+=1
+            return contact_info
+
+
+
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):
     """
     Writes the content of contact_info to an Excel file 
@@ -654,5 +680,5 @@ def write_to_excel_file(contact_info:dict,county:str,file_name:str):
     wb.save(file_name)    
 
 #get_PA_hs_links('Blair')
-#print(get_bedford_contacts())
+print(get_blair_contacts())
 #write_to_excel_file(get_bedford_contacts(),'Bedford','counselor_contacts.xlsx')

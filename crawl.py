@@ -183,7 +183,7 @@ def is_hs_staff(txt:str):
     grade = int(grade)
     return grade>8
 
-def get_soup(url:str,suff:str):
+def get_soup(url:str,suff:str=''):
     """
     Makes the request and returns the corresponding BeautifulSoup object
     @param url : base link for the school
@@ -495,7 +495,7 @@ def get_pittsburgh_contacts():
                     elif strong_tag:
                         contact_info[school][strong_tag.text[:strong_tag.text.find(',')]]=tag.find('a').text
         elif school=='Pittsburgh Obama 6-12':
-            soup=get_soup('https://www.pghschools.org/domain/823','')
+            soup=get_soup('https://www.pghschools.org/domain/823')
             strong_tags=soup.find_all('strong')
             for tag in strong_tags:
                 tag_txt=tag.text
@@ -525,7 +525,7 @@ def get_pittsburgh_contacts():
                                 i-=1
                             contact_info[school][name]=txt[i:txt.find('.org')+4]
         elif school=='University Preparatory School':
-            soup=get_soup('https://www.uprepmilliones.com/staff','')
+            soup=get_soup('https://www.uprepmilliones.com/staff')
             div_tags=soup.find_all('div',attrs={'role':'listitem'})
             for tag in div_tags:
                 job_tag=tag.find('span',attrs={'style':'font-family:futura-lt-w01-book,sans-serif;'})
@@ -543,7 +543,7 @@ def get_pittsburgh_contacts():
                     a_tag=tag.find('a')
                     contact_info[school][a_tag.text]=a_tag.get('href')
         elif school=='Woodland Hills High School':
-            soup=get_soup('https://www.whsd.net/departments/special-education','')
+            soup=get_soup('https://www.whsd.net/departments/special-education')
             header_tags=soup.find('div',attrs={'class':'fsElement fsContent'}).find('div',attrs={'class':'fsElementContent'}).find_all(re.compile('h[5-6]'))
             for i in range(0,len(header_tags),3):
                 strong_tag = header_tags[i].find('strong')
@@ -563,7 +563,7 @@ def get_adams_contacts():
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Biglerville High School':
-            soup=get_soup('https://www.upperadams.org/departments/student-services-special-education/department-home/special-education','')
+            soup=get_soup('https://www.upperadams.org/departments/student-services-special-education/department-home/special-education')
             tags = soup.find_all(re.compile('em|p'))
             num_tags = len(tags)
             i=0
@@ -637,8 +637,8 @@ def get_blair_contacts():
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Williamsburg Community Junior/Senior High School':
-            soup=get_soup(school_to_link[school],'')
-            soup=get_soup(school_to_link[school]+soup.find('span',string='Special Education').parent.get('href')[1:],'')
+            soup=get_soup(school_to_link[school])
+            soup=get_soup(school_to_link[school]+soup.find('span',string='Special Education').parent.get('href')[1:])
             div_tags=soup.find_all('div',attrs={'class':None,'id':None})
             i = 0
             n = len(div_tags)
@@ -653,7 +653,7 @@ def get_blair_contacts():
                         contact_info[school][name_tag.text[:comma_ind]]=div_tags[i+2].text.strip('\xa0')
                     i+=2
                 i+=1
-            return contact_info
+    return contact_info
 
 
 

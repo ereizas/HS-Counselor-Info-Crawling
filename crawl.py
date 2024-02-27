@@ -175,7 +175,9 @@ def is_hs_staff(txt:str):
         return True
     i=grade_ind+len('Grade ')+1
     grade = ''
-    while txt[i]!='-':
+    while not txt[i].isnumeric():
+        i+=1
+    while i<len(txt) and txt[i].isnumeric():
         grade+=txt[i]
         i+=1
     if grade=='K':
@@ -653,6 +655,17 @@ def get_blair_contacts():
                         contact_info[school][name_tag.text[:comma_ind]]=div_tags[i+2].text.strip('\xa0')
                     i+=2
                 i+=1
+        elif school=='Bishop Guilfoyle High School':
+            soup=get_soup(school_to_link[school],'index.php?page=guidance-counseling')
+            contact_col=soup.find('div',attrs={'class':'twoColumnLeft'})
+            div_tags=contact_col.find_all('div')
+            for tag in div_tags:
+                tag_txts = tag.text.split(')')
+                for txt in tag_txts:
+                    if 'Counselor' in txt and is_hs_staff(txt):
+                        end_name_ind = txt.find(' ', txt.find(' ')+1)
+                        end_email_ind = txt.find(' ',end_name_ind+1)
+                        contact_info[school][txt[:end_name_ind].strip(',')]=txt[end_name_ind+1:end_email_ind].strip(',')
     return contact_info
 
 

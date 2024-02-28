@@ -666,9 +666,14 @@ def get_blair_contacts():
                         end_name_ind = txt.find(' ', txt.find(' ')+1)
                         end_email_ind = txt.find(' ',end_name_ind+1)
                         contact_info[school][txt[:end_name_ind].strip(',')]=txt[end_name_ind+1:end_email_ind].strip(',')
+        elif school=='Greater Altoona Career and Technology Center':
+            soup=get_soup(school_to_link[school],'student-services/our-staff/')
+            div_tags=soup.find_all('div',attrs={'class':'abcfslPadLPc5 abcfslCenter575'})
+            for tag in div_tags:
+                job_txt = tag.find('div',attrs={'class':'dirTitle'}).text
+                if 'Counselor' in job_txt or 'Special Population' in job_txt:
+                    contact_info[school][tag.find('h3').text]=tag.find('a').text
     return contact_info
-
-
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):
     """

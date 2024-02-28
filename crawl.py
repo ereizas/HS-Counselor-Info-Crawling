@@ -673,6 +673,14 @@ def get_blair_contacts():
                 job_txt = tag.find('div',attrs={'class':'dirTitle'}).text
                 if 'Counselor' in job_txt or 'Special Population' in job_txt:
                     contact_info[school][tag.find('h3').text]=tag.find('a').text
+        elif school=='Tyrone Area High School':
+            soup=get_soup(school_to_link[school])
+            soup=get_soup(school_to_link[school]+soup.find('span',string='Departments').parent.get('href')[1:])
+            soup=get_soup(school_to_link[school]+soup.find('a',string='Student Services').get('href')[1:])
+            soup=get_soup(school_to_link[school]+soup.find('span',string='Special Education').parent.get('href')[1:])
+            a_tags = soup.find_all('a',attrs={'id':None,'title':None,'href':re.compile('([A-Za-z])*@([A-Za-z0-9])*.')})
+            for tag in a_tags:
+                contact_info[school][tag.text.strip('\xa0')]=tag.get('href').strip('mailto:')
     return contact_info
 
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):

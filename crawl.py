@@ -706,6 +706,20 @@ def get_allegany_contacts():
             contact_tag = soup.find('span',attrs={'class':'H4_Template H3_Template H1_Template'})
             tag_txt = contact_tag.text
             contact_info[school][tag_txt[:tag_txt.find(' ',tag_txt.find(' ')+1)].strip('\xa0')]=contact_tag.find('a').text
+        elif school=='Andover Central School':
+            soup=get_soup(school_to_link[school],'page/special-education')
+            p_tags = soup.find_all('p',attrs={'style':'text-align: center'})
+            for tag in p_tags:
+                email = ''
+                tag_txt=tag.text
+                i=len(tag_txt)-1
+                while i>0 and not tag_txt[i].isnumeric():
+                    email+=tag_txt[i]
+                    i-=1
+                email=email[::-1]
+                span_tag=tag.find('span')
+                if span_tag and email:
+                    contact_info[school][span_tag.text]=email
     return contact_info
             
 

@@ -702,7 +702,9 @@ def get_allegany_contacts():
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Alfred-Almond Junior-Senior High School':
-            soup=get_soup(school_to_link[school],'domain/52')
+            soup=get_soup(school_to_link[school])
+            special_ed_domain_suffix = soup.find('span',string=re.compile('Special Education'))
+            soup=get_soup(school_to_link[school],special_ed_domain_suffix.parent.get('href')[1:])
             contact_tag = soup.find('span',attrs={'class':'H4_Template H3_Template H1_Template'})
             tag_txt = contact_tag.text
             contact_info[school][tag_txt[:tag_txt.find(' ',tag_txt.find(' ')+1)].strip('\xa0')]=contact_tag.find('a').text

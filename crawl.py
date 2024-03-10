@@ -696,6 +696,19 @@ def get_blair_contacts():
                 contact_info[school][tag.text.strip('\xa0')]=tag.get('href').strip('mailto:')
     return contact_info
 
+def get_allegany_contacts():
+    contact_info = dict()
+    school_to_link=get_school_to_link('allegany_hs_links.json','Allegany')
+    for school in school_to_link:
+        contact_info[school]=dict()
+        if school=='Alfred-Almond Junior-Senior High School':
+            soup=get_soup(school_to_link[school],'domain/52')
+            contact_tag = soup.find('span',attrs={'class':'H4_Template H3_Template H1_Template'})
+            tag_txt = contact_tag.text
+            contact_info[school][tag_txt[:tag_txt.find(' ',tag_txt.find(' ')+1)].strip('\xa0')]=contact_tag.find('a').text
+    return contact_info
+            
+
 def write_to_excel_file(contact_info:dict,county:str,file_name:str):
     """
     Writes the content of contact_info to an Excel file 
@@ -719,6 +732,6 @@ def write_to_excel_file(contact_info:dict,county:str,file_name:str):
     wb.save(file_name)
 
 #get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania','Blair')
-get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_New_York','Allegany')
-#print(get_blair_contacts())
+#get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_New_York','Allegany')
+print(get_allegany_contacts())
 #write_to_excel_file(get_blair_contacts(),'Blair','counselor_contacts.xlsx')

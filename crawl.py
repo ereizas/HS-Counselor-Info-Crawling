@@ -2,18 +2,19 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import openpyxl
-from time import sleep
+from time import sleep,time
 from random import randint
 from json import dump, load
 from search import google_search
 
-def get_PA_hs_links(county_to_retrieve:str=None):
+def get_state_hs_links(state_hs_lst_url:str,county_to_retrieve:str=None):
     """
     Parses wikipedia page to create a dictionary that maps county to a dictionary that maps school name to school url and writes to a json file with 
     the created dictionary hs_links
+    @param state_hs_lst_url : wikipedia url for list of high schools in a certain state
     @param county_to_retrieve : str of a county in PA
     """
-    req = requests.get('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania')
+    req = requests.get(state_hs_lst_url)
     soup = BeautifulSoup(req.text,'html.parser')
     hs_links = dict()
     schools_html = soup.find_all(re.compile('span|div'),attrs={'class':re.compile('mw-headline|div-col')})
@@ -38,22 +39,34 @@ def get_PA_hs_links(county_to_retrieve:str=None):
                 city = schools_html[i].text
             elif schools_html[i].name=='div':
                 schools=schools_html[i].find_all('li')
+                start_time = None
                 for school in schools:
-                    query = school.text
-                    if ',' not in query:
-                        if city:
-                            query+=' ' + city
-                        else:
-                            query+=' ' +county
-                    print(query)
-                    goog_srch_res = google_search(query)
-                    print(f"Sleeping for 30 seconds")
-                    sleep(randint(30, 40))
-                    if goog_srch_res:
+                    external_link=school.find('a',attrs={'class':'external text'})
+                    if external_link:
+                        school_text=school.text
                         comma_ind = school.text.find(',')
                         if comma_ind==-1:
                             comma_ind = len(school.text)
-                        hs_links[county][school.text[:comma_ind]]=goog_srch_res
+                        hs_links[county][school_text[:comma_ind]]=external_link.get('href')
+                    else:
+                        query = school.text
+                        if ',' not in query:
+                            if city:
+                                query+=' ' + city
+                            else:
+                                query+=' ' +county
+                        if start_time!=None:
+                            sleep_time=randint(30, 40)-(time()-start_time)
+                            print(f"Sleeping for {sleep_time} seconds")
+                            sleep(sleep_time)
+                        print(query)
+                        start_time=time()
+                        goog_srch_res = google_search(query)
+                        if goog_srch_res:
+                            comma_ind = school.text.find(',')
+                            if comma_ind==-1:
+                                comma_ind = len(school.text)
+                            hs_links[county][school.text[:comma_ind]]=goog_srch_res
             i+=1
         if county_to_retrieve:
             break
@@ -703,8 +716,9 @@ def write_to_excel_file(contact_info:dict,county:str,file_name:str):
             sheet.cell(row=i,column=2).value=couns
             sheet.cell(row=i,column=3).value=contact_info[school][couns]
             i+=1
-    wb.save(file_name)    
+    wb.save(file_name)
 
-#get_PA_hs_links('Blair')
-print(get_blair_contacts())
-#write_to_excel_file(get_bedford_contacts(),'Bedford','counselor_contacts.xlsx')
+#get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania','Blair')
+get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_New_York','Allegany')
+#print(get_blair_contacts())
+#write_to_excel_file(get_blair_contacts(),'Blair','counselor_contacts.xlsx')

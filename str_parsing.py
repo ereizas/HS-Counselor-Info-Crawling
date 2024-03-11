@@ -27,6 +27,6 @@ def get_char_ind(s:str,char:str,index_reduction:int=0):
     @return char_ind : index of the character or length of string if it does not appear in the string
     """
     char_ind = s.find(',')
-    if comma_ind==-1:
-        comma_ind = len(s) - index_reduction
+    if char_ind==-1:
+        char_ind = len(s) - index_reduction
     return char_ind

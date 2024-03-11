@@ -44,9 +44,7 @@ def get_state_hs_links(state_hs_lst_url:str,county_to_retrieve:str=None):
                     external_link=school.find('a',attrs={'class':'external text'})
                     if external_link:
                         school_text=school.text
-                        comma_ind = school.text.find(',')
-                        if comma_ind==-1:
-                            comma_ind = len(school.text)
+                        comma_ind = get_char_ind(school.text,',')
                         hs_links[county][school_text[:comma_ind]]=external_link.get('href')
                     else:
                         query = school.text
@@ -63,9 +61,7 @@ def get_state_hs_links(state_hs_lst_url:str,county_to_retrieve:str=None):
                         start_time=time()
                         goog_srch_res = google_search(query)
                         if goog_srch_res:
-                            comma_ind = school.text.find(',')
-                            if comma_ind==-1:
-                                comma_ind = len(school.text)
+                            comma_ind = get_char_ind(school.text,',')
                             hs_links[county][school.text[:comma_ind]]=goog_srch_res
             i+=1
         if county_to_retrieve:
@@ -128,13 +124,8 @@ def get_contacts_from_ul_tags(soup:BeautifulSoup,school:str,header_num:str,conta
     header_tags=soup.find_all('h'+header_num,string=re.compile(regex))
     for i in range(len(ul_tags)):
         header_txt = header_tags[i].text
-        colon_ind = header_txt.find(':')
-        comma_ind = header_txt.find(',')
-        len_text = len(header_txt)
-        if colon_ind==-1:
-            colon_ind=len_text
-        if comma_ind==-1:
-            comma_ind=len_text
+        comma_ind = get_char_ind(header_txt,',')
+        colon_ind = get_char_ind(header_txt,':')
         end_ind = colon_ind if colon_ind<comma_ind else comma_ind
         contact_info[school][header_txt[:end_ind]]=ul_tags[i].find('a').text
 
@@ -197,6 +188,19 @@ def is_hs_staff(txt:str):
         return False
     grade = int(grade)
     return grade>8
+
+def get_char_ind(s:str,char:str,index_reduction:int=0):
+    """
+    Retrieves the index of the special character in the string or the length of the string if it does not appear in the string
+    @param s : the string to search for char in
+    @param char : the character to search for
+    @param index_reduction : if char is not found in s, then this is used to scale down the index used
+    @return char_ind : index of the character or length of string if it does not appear in the string
+    """
+    char_ind = s.find(',')
+    if comma_ind==-1:
+        comma_ind = len(s) - index_reduction
+    return char_ind
 
 def get_soup(url:str,suff:str=''):
     """
@@ -597,9 +601,7 @@ def get_adams_contacts():
                 dept = tag.find('div',attrs={'class':'department'}).text
                 if 'Learning Support' in dept or 'Guidance' in dept:
                     name = tag.find('div',attrs={'class':'name'}).text
-                    comma_ind = name.find(',')
-                    if comma_ind==-1:
-                        comma_ind=len(name)-1
+                    comma_ind = get_char_ind(name,',',1)
                     contact_info[school][name[:comma_ind].strip('\n ')]=tag.find('a').text.strip('\n ')
     return contact_info
 
@@ -662,9 +664,7 @@ def get_blair_contacts():
                 if name_tag:
                     job_txt = div_tags[i+1].text
                     if 'Special Ed' in job_txt or 'Psychologist' in job_txt or 'Learning Support 9-12' in job_txt:
-                        comma_ind = name_tag.text.find(',')
-                        if comma_ind==-1:
-                            comma_ind = len(name_tag.text)
+                        comma_ind = get_char_ind(name_tag.text,',')
                         contact_info[school][name_tag.text[:comma_ind]]=div_tags[i+2].text.strip('\xa0')
                     i+=2
                 i+=1

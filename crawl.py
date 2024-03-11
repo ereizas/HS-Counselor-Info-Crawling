@@ -1,10 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 import re
-import openpyxl
 from time import sleep,time
 from random import randint
-from json import dump, load
+from json import dump
 from search import google_search
 from str_parsing import *
 from html_parsing import *
@@ -72,16 +71,6 @@ def get_state_hs_links(state_hs_lst_url:str,county_to_retrieve:str=None):
     with open('hs_links.json' if not county_to_retrieve else county_to_retrieve.lower()+'_hs_links'+'.json','w') as file:
         dump(hs_links,file)
     file.close()
-
-def get_school_to_link(file_name:str, county:str):
-    """
-    Extracts dictionary that maps school to link from json indicated by file_name
-    @param file_name
-    """
-    file = open(file_name)
-    school_to_link=load(file)[county]
-    file.close()
-    return school_to_link
 
 def get_phila_county_contacts():
     """
@@ -585,29 +574,6 @@ def get_allegany_contacts():
                 if span_tag and email:
                     contact_info[school][span_tag.text]=email
     return contact_info
-            
-
-def write_to_excel_file(contact_info:dict,county:str,file_name:str):
-    """
-    Writes the content of contact_info to an Excel file 
-    @param contact_info : dictionary mapping school name indicated by school to a dictionary mapping school staff member name to email
-    @param county
-    @param file_name
-    """
-    wb = openpyxl.Workbook()
-    sheet = wb.active
-    sheet.title = county
-    sheet.cell(row=1, column=1).value='School'
-    sheet.cell(row=1,column=2).value='Counselor Name'
-    sheet.cell(row=1, column=3).value='Email'
-    i = 2
-    for school in contact_info:
-        for couns in contact_info[school]:
-            sheet.cell(row=i,column=1).value=school
-            sheet.cell(row=i,column=2).value=couns
-            sheet.cell(row=i,column=3).value=contact_info[school][couns]
-            i+=1
-    wb.save(file_name)
 
 #get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania','Blair')
 #get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_New_York','Allegany')

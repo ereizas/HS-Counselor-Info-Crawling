@@ -7,6 +7,7 @@ from json import dump
 from search import google_search
 from str_parsing import *
 from html_parsing import *
+from file_handling import *
 
 def get_state_hs_links(state_hs_lst_url:str,county_to_retrieve:str=None):
     """
@@ -553,9 +554,7 @@ def get_allegany_contacts():
     for school in school_to_link:
         contact_info[school]=dict()
         if school=='Alfred-Almond Junior-Senior High School':
-            soup=get_soup(school_to_link[school])
-            special_ed_domain_suffix = soup.find('span',string=re.compile('Special Education'))
-            soup=get_soup(school_to_link[school],special_ed_domain_suffix.parent.get('href')[1:])
+            soup=get_soup_of_span_channel_page(school_to_link[school],re.compile('Special Education'))
             contact_tag = soup.find('span',attrs={'class':'H4_Template H3_Template H1_Template'})
             tag_txt = contact_tag.text
             contact_info[school][tag_txt[:tag_txt.find(' ',tag_txt.find(' ')+1)].strip('\xa0')]=contact_tag.find('a').text
@@ -573,9 +572,21 @@ def get_allegany_contacts():
                 span_tag=tag.find('span')
                 if span_tag and email:
                     contact_info[school][span_tag.text]=email
+        elif school=='Belfast Central School':
+            soup=get_soup_of_span_channel_page(school_to_link[school],'Special Education')
+            span_tags=soup.find_all('span',attrs={'style':'font-size: 14pt;'})
+            i=0
+            n=len(span_tags)
+            while i<n:
+                name = span_tags[i].text
+                email = span_tags[i+1].text
+                contact_info[school][name[name.find(':')+2:]]=email[email.find(':')+2:]
+                i+=4
+            soup=get_soup_of_span_channel_page
+
     return contact_info
 
 #get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania','Blair')
 #get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_New_York','Allegany')
-print(get_phila_county_contacts())
+print(get_allegany_contacts())
 #write_to_excel_file(get_blair_contacts(),'Blair','counselor_contacts.xlsx')

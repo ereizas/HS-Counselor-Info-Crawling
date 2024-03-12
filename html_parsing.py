@@ -12,6 +12,17 @@ def get_soup(url:str,suff:str=''):
     req=requests.get(url+suff)
     return BeautifulSoup(req.text,'html.parser')
 
+def get_soup_of_span_channel_page(url:str,s):
+    """
+    Retrieves the BeautifulSoup object of the page linked to by a tab with a certain string in it
+    @param url : the base link
+    @param s : the string or pattern to search for in the html within the span tags
+    @return : BeautifulSoup object
+    """
+    soup=get_soup(url)
+    domain_suffix = soup.find('span',string=s)
+    return get_soup(url,domain_suffix.parent.get('href')[1:])
+
 def get_contacts_from_sprdsheet(soup:BeautifulSoup,job_col:str,name_cols:list[str],email_col:str,contact_info:dict,school:str,name_rvrs_order=False):
     """
     Parses contacts of high school Special Ed staff and Counselors into a dictionary from a certain format of spreadsheet within HTML of the school website indicated by school

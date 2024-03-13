@@ -602,6 +602,16 @@ def get_allegany_contacts():
                                 name = str(next_s).strip()
                                 break
                         contact_info[school][name]=email.text
+        elif school=='Friendship Central School':
+            soup=get_soup_of_span_channel_page(school_to_link[school],'Special Education')
+            p_tags=soup.find_all('p')
+            for p_tag in p_tags:
+                span_tags=p_tag.find_all('span')
+                if span_tags:
+                    num_tags=len(span_tags)
+                    first_line_txt=span_tags[0].text
+                    if num_tags==1 and 'CSE' in first_line_txt and 'Fax' not in first_line_txt:
+                        contact_info[school][first_line_txt[first_line_txt.find('-')+2:first_line_txt.find('(')-1]]=first_line_txt[first_line_txt.rfind('-')+2:first_line_txt.rfind(')')]
     return contact_info
 
 #get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania','Blair')

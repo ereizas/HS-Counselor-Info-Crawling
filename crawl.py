@@ -1,5 +1,5 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString, Tag
 import re
 from time import sleep,time
 from random import randint
@@ -582,8 +582,26 @@ def get_allegany_contacts():
                 email = span_tags[i+1].text
                 contact_info[school][name[name.find(':')+2:]]=email[email.find(':')+2:]
                 i+=4
-            soup=get_soup_of_span_channel_page
-
+        elif school=='Fillmore Central School':
+            soup=get_soup_of_span_channel_page(school_to_link[school],re.compile('Special Education'))
+            soup=get_soup(school_to_link[school],soup.find('span',string='Special Education').parent.get('href'))
+            p_tags=soup.find_all('p')
+            for tag in p_tags:
+                email = tag.find('a')
+                if email and 'Special Education' in tag.text:
+                    breaks = tag.find_all('br')
+                    if breaks:
+                        name = None
+                        #Credit to Mark Longair for parsing br tags on https://stackoverflow.com/questions/5275359/using-beautifulsoup-to-extract-text-between-line-breaks-e-g-br-tags/5275918#5275918
+                        for br in soup.findAll('br'):
+                            next_s = br.previousSibling
+                            if not (next_s and isinstance(next_s,NavigableString)):
+                                continue
+                            next2_s = next_s.nextSibling
+                            if next2_s and isinstance(next2_s,Tag) and next2_s.name == 'br':
+                                name = str(next_s).strip()
+                                break
+                        contact_info[school][name]=email.text
     return contact_info
 
 #get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania','Blair')

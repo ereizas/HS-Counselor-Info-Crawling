@@ -612,6 +612,16 @@ def get_allegany_contacts():
                     first_line_txt=span_tags[0].text
                     if num_tags==1 and 'CSE' in first_line_txt and 'Fax' not in first_line_txt:
                         contact_info[school][first_line_txt[first_line_txt.find('-')+2:first_line_txt.find('(')-1]]=first_line_txt[first_line_txt.rfind('-')+2:first_line_txt.rfind(')')]
+        elif school=='Genesee Valley Central School':
+            soup=get_soup(school_to_link[school],'Domain/5')
+            div_tags=soup.find_all('div',attrs={'id':'about-teacher-bio'})
+            for tag in div_tags:
+                job_tag = tag.find('p')
+                if job_tag:
+                    job=job_tag.text
+                    #Psychologist was mispelled when I last checked
+                    if 'Special Education' in job or 'chologist' in job:
+                        contact_info[school][tag.find('h1').text.strip(' ')]=tag.find('a').text
     return contact_info
 
 #get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania','Blair')

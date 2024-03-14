@@ -632,6 +632,14 @@ def get_allegany_contacts():
                     #Psychologist was also mispelled here...
                     if 'Special Ed' in job_txt or 'Secondary School' in job_txt:
                         contact_info[school][p_tags[0].text]=p_tags[4].find('a').get('href').strip('mailto:')
+        elif school=='Whitesville Central School':
+            soup=get_soup(school_to_link[school],'page/guidance-office')
+            p_tags=soup.find_all('p',attrs={'style':'text-align: center'})
+            for tag in p_tags:
+                span_tags=tag.find_all('span')
+                if len(span_tags)>1:
+                    if 'Counselor' in span_tags[1].text:
+                        contact_info[school][span_tags[0].text]=str(span_tags[2].find('br').nextSibling)
     return contact_info
 
 #get_state_hs_links('https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania','Blair')

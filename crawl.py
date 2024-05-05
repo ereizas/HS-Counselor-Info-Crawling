@@ -481,7 +481,7 @@ def get_bedford_contacts():
     for school in school_to_link:
         contact_info[school]=dict()
         if school=="Bedford High School":
-            get_contacts_from_staff_info_blocks(school_to_link,school,["Learning Support","Special Ed","Counselor"],contact_info)
+            get_contacts_from_staff_info_blocks(school_to_link,school,contact_info,["Learning Support","Special Ed","Counselor"])
         elif school=="Chestnut Ridge Senior High School":
             soup=get_soup(school_to_link[school],"apps/staff")
             div_tags=soup.find_all("div",attrs={"class":"user-info ada"})
@@ -497,7 +497,7 @@ def get_bedford_contacts():
                 if "Special Ed" in tag_txt:
                     contact_info[school][tag_txt[:tag_txt.find("\xa0")]]=tag.find("a").text
         elif school=="Tussey Mountain Junior/Senior High School":
-            get_contacts_from_staff_info_blocks(school_to_link,school,["Support"],contact_info)  
+            get_contacts_from_staff_info_blocks(school_to_link,school,contact_info,["Support"])  
     return contact_info
 
 def get_blair_contacts():
@@ -642,8 +642,17 @@ def get_allegany_contacts():
                         contact_info[school][span_tags[0].text]=str(span_tags[2].find("br").nextSibling)
     return contact_info
 
+def get_broome_contacts():
+    contact_info = dict()
+    school_to_link=get_school_to_link("broome_hs_links.json","Broome")
+    for school in school_to_link:
+        contact_info[school]=dict()
+        if school=="Chenango Forks High School":
+            get_contacts_from_staff_info_blocks(school_to_link,school,contact_info,department="Special Education")
+            
+    return contact_info
 
 #get_state_hs_links("https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania","Blair")
-get_state_hs_links("https://en.wikipedia.org/wiki/List_of_high_schools_in_New_York","Broome")
-#print(get_allegany_contacts())
-#write_to_excel_file(get_allegany_contacts(),"Allegany","counselor_contacts.xlsx")
+#get_state_hs_links("https://en.wikipedia.org/wiki/List_of_high_schools_in_New_York","Broome")
+print(get_broome_contacts())
+#write_to_excel_file(get_allegany_contacts(),"Broome","counselor_contacts.xlsx")

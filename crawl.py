@@ -669,6 +669,17 @@ def get_broome_contacts():
             wpcsd_staff_link = "https://wpcsd.org/staff"
             soup=get_soup(wpcsd_staff_link)
             get_contacts_from_staff_info_blocks(school_to_link,school,contact_info,["SPECIAL ED"],"SPLED")
+        elif school=="Seton Catholic Central High School":
+            soup=get_soup(school_to_link[school],"about-scc/faculty/faculty-by-department/")
+            tags=soup.find_all(re.compile(r"(^p$)|(^h3$)"))
+            i = 0
+            while i<len(tags):
+                if tags[i].name=="h3" and "Special Services" in tags[i].text:
+                    i+=1
+                    a_tags=tags[i].find_all("a")
+                    for tag in a_tags:
+                        contact_info[school][tag.text]=tag.get("href").strip("mailto:")
+                i+=1
     return contact_info
 
 #get_state_hs_links("https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania","Blair")

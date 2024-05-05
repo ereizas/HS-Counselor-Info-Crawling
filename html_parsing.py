@@ -73,7 +73,7 @@ def get_contacts_from_ul_tags(soup:BeautifulSoup,school:str,header_num:str,conta
     regex = r"^[A-Z].[a-z]* [A-Z].[a-z]*"
     if title_included:
         regex=r"^(Mrs?)|(Ms)|(Dr)\. [A-Z].[a-z]* [A-Z].[a-z]*"
-    header_tags=soup.find_all("h"+header_num,string=re.compile(rregex))
+    header_tags=soup.find_all("h"+header_num,string=re.compile(regex))
     for i in range(len(ul_tags)):
         header_txt = header_tags[i].text
         comma_ind = get_char_ind(header_txt,",")
@@ -119,7 +119,6 @@ def get_contacts_from_staff_info_blocks(school_to_link,school,contact_info,job_k
             if job_keywords and department:
                 title = tag.find("div",attrs={"class":"title"}).text
                 dept = tag.find("div",attrs={"class":"department"}).text
-                print(dept)
                 if any([keyword in title for keyword in job_keywords]) and department in dept:
                     contact_info[school][tag.find("div",attrs={"class":"name"}).text.strip("\n ")]=tag.find("a").text.strip("\n ")
             elif job_keywords:

@@ -658,7 +658,13 @@ def get_broome_contacts():
                 position = tag.find("span",attrs={"class":"scTitle"}).text
                 if position and "Special Education" in position:
                     contact_info[school][tag.find("span",attrs={"class":"scName"}).text]=tag.find("a",attrs={"class":"scEmail"}).text
-        
+        elif school=="Union-Endicott High School":
+            soup = get_soup(school_to_link[school],"/page/guidance")
+            p_tags = soup.find_all("p")
+            for tag in p_tags:
+                tag_txt = tag.text
+                if "Psychologist" in tag_txt[tag_txt.rfind('-'):]:
+                    contact_info[school][tag_txt[:tag_txt.find('-')]]=tag.find('a').get("href")
     return contact_info
 
 #get_state_hs_links("https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania","Blair")

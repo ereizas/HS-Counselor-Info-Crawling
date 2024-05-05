@@ -665,6 +665,10 @@ def get_broome_contacts():
                 tag_txt = tag.text
                 if "Psychologist" in tag_txt[tag_txt.rfind('-'):]:
                     contact_info[school][tag_txt[:tag_txt.find('-')]]=tag.find('a').get("href")
+        elif school=="Whitney Point High School":
+            wpcsd_staff_link = "https://wpcsd.org/staff"
+            soup=get_soup(wpcsd_staff_link)
+            get_contacts_from_staff_info_blocks(school_to_link,school,contact_info,["SPECIAL ED"],"SPLED")
     return contact_info
 
 #get_state_hs_links("https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania","Blair")

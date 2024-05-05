@@ -36,7 +36,7 @@ def get_contacts_from_sprdsheet(soup:BeautifulSoup,job_col:str,name_cols:list[st
     """
     if school=="Shoemaker":
         soup=soup.find("table",attrs={"id":"tablepress-263"})
-    rows = soup.find_all("tr",attrs={"class":re.compile("row-([2-9]|[1-9]\d{1,}) ?(even|odd)?")})
+    rows = soup.find_all("tr",attrs={"class":re.compile(r"row-([2-9]|[1-9]\d{1,}) ?(even|odd)?")})
     for row in rows:
         td_tag = row.find("td",attrs={"class":"column-"+job_col})
         if td_tag:
@@ -70,10 +70,10 @@ def get_contacts_from_ul_tags(soup:BeautifulSoup,school:str,header_num:str,conta
     @param title_included : whether an honorific is included with the staff member name
     """
     ul_tags=soup.find_all("ul",attrs={"class":None,"id":None})[1:]
-    regex = "^[A-Z].[a-z]* [A-Z].[a-z]*"
+    regex = r"^[A-Z].[a-z]* [A-Z].[a-z]*"
     if title_included:
-        regex="^(Mrs?)|(Ms)|(Dr)\. [A-Z].[a-z]* [A-Z].[a-z]*"
-    header_tags=soup.find_all("h"+header_num,string=re.compile(regex))
+        regex=r"^(Mrs?)|(Ms)|(Dr)\. [A-Z].[a-z]* [A-Z].[a-z]*"
+    header_tags=soup.find_all("h"+header_num,string=re.compile(rregex))
     for i in range(len(ul_tags)):
         header_txt = header_tags[i].text
         comma_ind = get_char_ind(header_txt,",")
@@ -88,7 +88,7 @@ def get_contacts_from_name_pos_class_div_tags(soup:BeautifulSoup,contact_info:di
     @param contact_info : dictionary mapping school name indicated by school to a dictionary mapping school staff member name to email
     @param school : name of the school
     """
-    div_tags=soup.find_all("div",attrs={"class":re.compile("name-position|email-phone")})
+    div_tags=soup.find_all("div",attrs={"class":re.compile(r"name-position|email-phone")})
     num_tags = len(div_tags)
     for i in range(0,num_tags,2):
         name_txt = div_tags[i].text
@@ -104,19 +104,25 @@ def get_contacts_from_p_tags(soup:BeautifulSoup,contact_info:dict,school:str):
     """
     p_tags = soup.find_all("p")
     for tag in p_tags:
-        a_tag=tag.find("a",attrs={"href":re.compile("([A-Za-z])*@([A-Za-z0-9])*.org")})
+        a_tag=tag.find("a",attrs={"href":re.compile(r"([A-Za-z])*@([A-Za-z0-9])*.org")})
         tag_txt=tag.text
         if a_tag and ("Counselor" in tag_txt or "Special Ed" in tag_txt) and "LS" not in tag_txt:
             contact_info[school][a_tag.text]=a_tag.get("href").strip("mailto:")
 
-def get_contacts_from_staff_info_blocks(school_to_link,school,contact_info,job_keywords=None,department=None):
+def get_contacts_from_staff_info_blocks(school_to_link,school,contact_info,job_keywords:list[str]=None,department=None):
     i=1
     div_tags=1
     while div_tags:
         soup=get_soup(school_to_link[school],"/staff?page_no="+str(i))
         div_tags=soup.find_all("div",attrs={"class":"staff-info"})
         for tag in div_tags:
-            if job_keywords:
+            if job_keywords and department:
+                title = tag.find("div",attrs={"class":"title"}).text
+                dept = tag.find("div",attrs={"class":"department"}).text
+                print(dept)
+                if any([keyword in title for keyword in job_keywords]) and department in dept:
+                    contact_info[school][tag.find("div",attrs={"class":"name"}).text.strip("\n ")]=tag.find("a").text.strip("\n ")
+            elif job_keywords:
                 title = tag.find("div",attrs={"class":"title"}).text
                 if any([keyword in title for keyword in job_keywords]):
                     contact_info[school][tag.find("div",attrs={"class":"name"}).text.strip("\n ")]=tag.find("a").text.strip("\n ")

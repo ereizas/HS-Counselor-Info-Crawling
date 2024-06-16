@@ -70,7 +70,7 @@ def get_state_hs_links(state_hs_lst_url:str,county_to_retrieve:str=None):
         if county_to_retrieve:
             break
     print(hs_links)
-    with open("hs_links.json" if not county_to_retrieve else county_to_retrieve.lower()+"_hs_links"+".json","w") as file:
+    with open("./hs_links/hs_links.json" if not county_to_retrieve else "./hs_links/"+county_to_retrieve.lower()+"_hs_links"+".json","w") as file:
         dump(hs_links,file)
     file.close()
 
@@ -683,6 +683,6 @@ def get_broome_contacts():
     return contact_info
 
 #get_state_hs_links("https://en.wikipedia.org/wiki/List_of_high_schools_in_Pennsylvania","Blair")
-#get_state_hs_links("https://en.wikipedia.org/wiki/List_of_high_schools_in_New_York","Broome")
-print(get_broome_contacts())
+get_state_hs_links("https://en.wikipedia.org/wiki/List_of_high_schools_in_New_York","Erie")
+#print(get_broome_contacts())
 #write_to_excel_file(get_allegany_contacts(),"Broome","counselor_contacts.xlsx")

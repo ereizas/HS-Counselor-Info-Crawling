@@ -6,7 +6,7 @@ def get_school_to_link(file_name:str, county:str):
     Extracts dictionary that maps school to link from json indicated by file_name
     @param file_name
     """
-    file = open(file_name)
+    file = open("./hs_links/"+file_name)
     school_to_link=load(file)[county]
     file.close()
     return school_to_link
